@@ -1,0 +1,6 @@
+Test1:  StartActivityOneTest
+Test2:  DoubleRotateActivtyOneTest
+Test3:  StartActivityTwoTest 
+Test4:  DoubleRotateActivityTwoTest
+Test5:  CloseActivityTwoTest
+Test6:  ReopenActivityTwoTest
