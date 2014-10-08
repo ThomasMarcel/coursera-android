@@ -1,6 +1,4 @@
 coursera-android
 ================
 
-Coursera Programming Mobile Applications for Android Handheld Systems course insight  
-  
-[https://class.coursera.org/android-002](Coursera Course)
+This is my take on the [Coursera Programming Mobile Applications for Android Handheld Systems](https://class.coursera.org/android-002)
