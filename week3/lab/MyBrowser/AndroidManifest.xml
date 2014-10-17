@@ -29,7 +29,9 @@
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT"/>
-                <data android:pathPrefix="http" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="http" />
+                <!--  --><data android:pathPrefix="http" />-->
             </intent-filter>
         </activity>
     </application>

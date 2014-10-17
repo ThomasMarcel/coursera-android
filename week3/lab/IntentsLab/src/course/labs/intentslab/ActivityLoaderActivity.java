@@ -111,8 +111,8 @@ public class ActivityLoaderActivity extends Activity {
 		// RESULT_OK result code and a recognized request code
 		// If so, update the Textview showing the user-entered text.
 		if (resultCode == RESULT_OK) {
-			String url = data.getStringExtra("userInput");
-			mUserTextView.setText(url);
+			String result = data.getStringExtra("userInput");
+			mUserTextView.setText(result);
 		}
 	
     
