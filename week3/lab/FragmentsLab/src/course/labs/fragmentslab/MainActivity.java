@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.util.Log;
+import android.app.FragmentManager;
 
 public class MainActivity extends Activity implements
 		FriendsFragment.SelectionListener {
@@ -26,7 +27,12 @@ public class MainActivity extends Activity implements
 			mFriendsFragment = new FriendsFragment();
 
 			//TODO 1 - add the FriendsFragment to the fragment_container
-			
+			FragmentManager mFragmentManager = getFragmentManager();
+
+            FragmentTransaction fragmentTransaction = mFragmentManager
+                            .beginTransaction();
+            fragmentTransaction.add(R.id.friends_frag, mFriendsFragment);
+            fragmentTransaction.commit();
 			
 			
 
