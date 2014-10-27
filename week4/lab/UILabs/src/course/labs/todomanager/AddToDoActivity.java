@@ -23,6 +23,8 @@ import android.widget.TimePicker;
 import course.labs.todomanager.ToDoItem.Priority;
 import course.labs.todomanager.ToDoItem.Status;
 
+import android.widget.Toast;
+
 public class AddToDoActivity extends Activity {
 
 	// 7 days in milliseconds - 7 * 24 * 60 * 60 * 1000
@@ -94,7 +96,8 @@ public class AddToDoActivity extends Activity {
 				Log.i(TAG, "Entered cancelButton.OnClickListener.onClick()");
 
 				// TODO - Indicate result and finish
-
+				Toast.makeText(getApplicationContext(), "ToDo item creation cancelled", Toast.LENGTH_LONG).show();
+				finish();
 			}
 		});
 
@@ -106,6 +109,10 @@ public class AddToDoActivity extends Activity {
 				Log.i(TAG, "Entered resetButton.OnClickListener.onClick()");
 
 				// TODO - Reset data to default values
+				mTitleText.setText("");
+				setDefaultDateTime();
+				mDefaultPriorityButton.toggle();
+				mDefaultStatusButton.toggle();
 
 			}
 		});
@@ -121,13 +128,13 @@ public class AddToDoActivity extends Activity {
 				// gather ToDoItem data
 
 				// TODO - Get the current Priority
-				Priority priority = null;
+				Priority priority = getPriority();
 
 				// TODO - Get the current Status
-				Status status = null;
+				Status status = getStatus();
 
 				// TODO - Get the current ToDoItem Title
-				String titleString = null;
+				String titleString = mTitleText.getText().toString();
 
 				// Construct the Date string
 				String fullDate = dateString + " " + timeString;
@@ -138,6 +145,8 @@ public class AddToDoActivity extends Activity {
 						fullDate);
 
 				// TODO - return data Intent and finish
+				setResult(RESULT_OK, data);
+				finish();
 
 			}
 		});

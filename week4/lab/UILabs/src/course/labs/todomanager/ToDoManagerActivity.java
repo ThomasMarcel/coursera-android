@@ -24,6 +24,10 @@ import android.widget.TextView;
 import course.labs.todomanager.ToDoItem.Priority;
 import course.labs.todomanager.ToDoItem.Status;
 
+import android.app.Activity;
+import android.widget.Toast;
+import android.view.LayoutInflater;
+
 public class ToDoManagerActivity extends ListActivity {
 
 	private static final int ADD_TODO_ITEM_REQUEST = 0;
@@ -48,13 +52,17 @@ public class ToDoManagerActivity extends ListActivity {
 
 		// TODO - Inflate footerView for footer_view.xml file
 
-		TextView footerView = null;
+		TextView footerView = (TextView) LayoutInflater.from(getApplicationContext()).inflate(R.layout.footer_view, null);;
+		//TextView footerView = new TextView(getApplicationContext());
+		//footerView.setText(R.string.add_new_todo_item_string);
+		//Toast.makeText(getApplicationContext(), "Footer View: " + footerView.getText(), Toast.LENGTH_LONG).show();
 
 		// NOTE: You can remove this block once you've implemented the assignment
-		if (null == footerView) {
+		/*if (null == footerView) {
 			return;
-		}
+		}*/
 		// TODO - Add footerView to ListView
+		getListView().addFooterView(footerView);
 
 		
 		footerView.setOnClickListener(new OnClickListener() {
@@ -64,10 +72,13 @@ public class ToDoManagerActivity extends ListActivity {
 				Log.i(TAG,"Entered footerView.OnClickListener.onClick()");
 
 				//TODO - Implement OnClick().
+				Intent addToDoIntent = new Intent(getApplicationContext(), AddToDoActivity.class);
+				startActivityForResult(addToDoIntent, ADD_TODO_ITEM_REQUEST);
 			}
 		});
 
 		// TODO - Attach the adapter to this ListActivity's ListView
+		getListView().setAdapter(mAdapter);
 		
 	}
 
@@ -80,6 +91,10 @@ public class ToDoManagerActivity extends ListActivity {
 		// if user submitted a new ToDoItem
 		// Create a new ToDoItem from the data Intent
 		// and then add it to the adapter
+		if (resultCode == Activity.RESULT_OK && requestCode == ADD_TODO_ITEM_REQUEST) {
+            ToDoItem toDoItem = new ToDoItem(data);
+            mAdapter.add(toDoItem);
+        }
 
 	}
 
