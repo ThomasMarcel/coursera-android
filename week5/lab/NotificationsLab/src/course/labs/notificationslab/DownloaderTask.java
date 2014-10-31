@@ -19,6 +19,8 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.RemoteViews;
 
+import android.app.PendingIntent;
+
 public class DownloaderTask extends AsyncTask<String, Void, String[]> {
 
 	private static final int SIM_NETWORK_DELAY = 1000;
@@ -154,12 +156,12 @@ public class DownloaderTask extends AsyncTask<String, Void, String[]> {
 
 						// TODO: Check whether the result code is not MainActivity.IS_ALIVE
 
-						if (false || true) {
+						if (this.getResultCode() == MainActivity.IS_ALIVE) {
 
 							// TODO: If so, create a PendingIntent using the
 							// restartMainActivityIntent and set its flags
 							// to FLAG_UPDATE_CURRENT
-
+							PendingIntent pendingIntent = PendingIntent.getActivities(context, 0, intent, FLAG_UPDATE_CURRENT)
 
 
 							
