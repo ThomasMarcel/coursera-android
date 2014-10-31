@@ -161,7 +161,7 @@ public class DownloaderTask extends AsyncTask<String, Void, String[]> {
 							// TODO: If so, create a PendingIntent using the
 							// restartMainActivityIntent and set its flags
 							// to FLAG_UPDATE_CURRENT
-							PendingIntent pendingIntent = PendingIntent.getActivities(context, 0, intent, FLAG_UPDATE_CURRENT)
+							PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, restartMainActivtyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
 
 							
