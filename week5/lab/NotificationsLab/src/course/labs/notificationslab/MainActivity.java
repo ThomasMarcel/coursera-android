@@ -60,7 +60,7 @@ public class MainActivity extends Activity implements SelectionListener {
 		// The feed is fresh if it was downloaded less than 2 minutes ago
 		mIsFresh = (System.currentTimeMillis() - getFileStreamPath(
 				TWEET_FILENAME).lastModified()) < TWO_MIN;
-		mIsFresh = false;
+		//mIsFresh = false;
 		ensureData();
 
 	}
@@ -192,7 +192,8 @@ public class MainActivity extends Activity implements SelectionListener {
 		intentFilter.addAction(DATA_REFRESHED_ACTION);
 		registerReceiver(mRefreshReceiver, intentFilter);
 		
-		
+		mIsFresh = (System.currentTimeMillis() - getFileStreamPath(
+				TWEET_FILENAME).lastModified()) < TWO_MIN;
 		
 	}
 

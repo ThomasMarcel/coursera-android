@@ -178,8 +178,11 @@ public class DownloaderTask extends AsyncTask<String, Void, String[]> {
 							// TODO: Set the notification View's text to
 							// reflect whether the download completed
 							// successfully
-							mContentView.setTextViewText(R.id.text, successMsg);
-
+							if(success) {
+								mContentView.setTextViewText(R.id.text, successMsg);
+							} else {
+								mContentView.setTextViewText(R.id.text, failMsg);
+							}
 
 							
 
@@ -196,14 +199,13 @@ public class DownloaderTask extends AsyncTask<String, Void, String[]> {
 																		.setContent(mContentView)
 																		.setContentIntent(pendingIntent);
 
-							NotificationManager mNotificationManager = (NotificationManager) mApplicationContext.getSystemService(Context.NOTIFICATION_SERVICE);
-							mNotificationManager.notify(MY_NOTIFICATION_ID, notificationBuilder.build());
 							
 							
 							
 							
 							// TODO: Send the notification
-
+							NotificationManager mNotificationManager = (NotificationManager) mApplicationContext.getSystemService(Context.NOTIFICATION_SERVICE);
+							mNotificationManager.notify(MY_NOTIFICATION_ID, notificationBuilder.build());
 
 							
 							
