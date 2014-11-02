@@ -256,7 +256,7 @@ public class BubbleActivity extends Activity {
 			if (speedMode == RANDOM) {
 
 				// TODO - set rotation in range [1..3]
-
+				mRotate = r.nextInt(3);
 				
 			} else {
 				mDRotate = 0;
@@ -285,7 +285,8 @@ public class BubbleActivity extends Activity {
 
 				// TODO - Set mDx and mDy to indicate movement direction and speed 
 				// Limit speed in the x and y direction to [-3..3] pixels per movement.
-
+				mDx = r.nextInt(20);
+				mDy = r.nextInt(20);
 
 				
 				
@@ -304,13 +305,13 @@ public class BubbleActivity extends Activity {
 			} else {
 
 				// TODO - set scaled bitmap size in range [1..3] * BITMAP_SIZE
-
+				mScaledBitmapWidth = r.nextInt(3);
 
 				
 			}
 
 			// TODO - create the scaled bitmap using size set above
-
+			this.mScaledBitmap = Bitmap.createScaledBitmap(mScaledBitmap, mScaledBitmapWidth, mScaledBitmapWidth, false); 
 
 		}
 
@@ -333,7 +334,7 @@ public class BubbleActivity extends Activity {
 					// move one step. If the BubbleView exits the display,
 					// stop the BubbleView's Worker Thread.
 					// Otherwise, request that the BubbleView be redrawn.
-
+					
 
 					
 					
@@ -374,13 +375,13 @@ public class BubbleActivity extends Activity {
 					public void run() {
 
 						// TODO - Remove the BubbleView from mFrame
-
+						//mFrame.removeView(this),
 
 						
 						// TODO - If the bubble was popped by user,
 						// play the popping sound
 						if (wasPopped) {
-
+							mSoundPool.play(mSoundID, mStreamVolume, mStreamVolume, 0, 0, 1.0f);
 
 
 							
@@ -401,25 +402,25 @@ public class BubbleActivity extends Activity {
 		protected synchronized void onDraw(Canvas canvas) {
 
 			// TODO - save the canvas
-
+			Canvas mCanvas = canvas;
 
 			
 			// TODO - increase the rotation of the original image by mDRotate
-
+			
 
 			
 			// TODO Rotate the canvas by current rotation
 			// Hint - Rotate around the bubble's center, not its position
-
+			mCanvas.rotate(mDRotate, mXPos + (mScaledBitmapWidth / 2), mXPos + (mScaledBitmapWidth / 2));
 
 
 			
 			// TODO - draw the bitmap at it's new location
-
+			canvas.drawBitmap(mScaledBitmap, getMatrix(), mPainter);
 
 			
 			// TODO - restore the canvas
-
+			canvas.restore();
 
 			
 		}
@@ -429,7 +430,8 @@ public class BubbleActivity extends Activity {
 		private synchronized boolean moveWhileOnScreen() {
 
 			// TODO - Move the BubbleView
-
+			mXPos += mDx;
+			mYPos += mDy;
 
 
 			
@@ -445,8 +447,14 @@ public class BubbleActivity extends Activity {
 			// TODO - Return true if the BubbleView is still on the screen after
 			// the move operation
 
-			
-			return true || false;
+			if (mXPos < 0 - mScaledBitmapWidth
+                    || mXPos > mDisplayHeight + mScaledBitmapWidth
+                    || mYPos < 0 - mScaledBitmapWidth
+                    || mYPos > mDisplayWidth + mScaledBitmapWidth) {
+				return true;
+			} else {
+				return false;
+			}
 
 		}
 	}
