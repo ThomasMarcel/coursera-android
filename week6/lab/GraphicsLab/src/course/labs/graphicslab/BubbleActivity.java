@@ -85,17 +85,25 @@ public class BubbleActivity extends Activity {
 				/ mAudioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
 
 		// TODO - make a new SoundPool, allowing up to 10 streams
-		mSoundPool = null;
+		mSoundPool = new SoundPool(10, mAudioManager.STREAM_MUSIC, 0);
 
 		// TODO - set a SoundPool OnLoadCompletedListener that calls
 		// setupGestureDetector()
-		
+		mSoundPool.setOnLoadCompleteListener(new OnLoadCompleteListener() {
+			
+			@Override
+			public void onLoadComplete(SoundPool soundPool, int sampleId, int status){
+				if(0 == status) {
+					setupGestureDetector();
+				}
+			}
+		});
 		
 		
 		
 		
 		// TODO - load the sound from res/raw/bubble_pop.wav
-		
+		mSoundID = mSoundPool.load(this, R.raw.bubble_pop, 1);
 		
 		
 
@@ -150,8 +158,10 @@ public class BubbleActivity extends Activity {
 				// TODO - Implement onSingleTapConfirmed actions.
 				// You can get all Views in mFrame using the
 				// ViewGroup.getChildCount() method
-
-
+				Random randX = new Random(mDisplayWidth);
+				Random randY = new Random(mDisplayHeight);
+				BubbleView newBubble = new BubbleView(getApplicationContext(), randX.nextFloat(), randY.nextFloat());
+				mFrame.addView(newBubble);
 				
 				
 				
@@ -180,7 +190,7 @@ public class BubbleActivity extends Activity {
 		
 		
 		
-		return true || false;
+		return mGestureDetector.onTouchEvent(event);
 		
 	}
 
@@ -188,7 +198,7 @@ public class BubbleActivity extends Activity {
 	protected void onPause() {
 
 		// TODO - Release all SoundPool resources
-
+		mSoundPool.release();
 
 
 		
