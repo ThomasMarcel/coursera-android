@@ -160,10 +160,7 @@ public class BubbleActivity extends Activity {
 				// You can get all Views in mFrame using the
 				// ViewGroup.getChildCount() method
 				Log.i(TAG, "On Single Tap Confirmed");
-				Random r = new Random();
-				float randX = (float) r.nextInt(mDisplayWidth) + 1;
-				float randY = (float) r.nextInt(mDisplayHeight) + 1;
-				BubbleView newBubble = new BubbleView(getApplicationContext(), randX, randY);
+				BubbleView newBubble = new BubbleView(getApplicationContext(), event.getX(), event.getY());
 				mFrame.addView(newBubble);
 				
 				
@@ -259,7 +256,7 @@ public class BubbleActivity extends Activity {
 			if (speedMode == RANDOM) {
 
 				// TODO - set rotation in range [1..3]
-				mRotate = r.nextInt(3);
+				mDRotate = r.nextInt(2) + 1;
 				
 			} else {
 				mDRotate = 0;
@@ -288,8 +285,8 @@ public class BubbleActivity extends Activity {
 
 				// TODO - Set mDx and mDy to indicate movement direction and speed 
 				// Limit speed in the x and y direction to [-3..3] pixels per movement.
-				mDx = r.nextInt(20);
-				mDy = r.nextInt(20);
+				mDx = r.nextInt(6) - 3;
+				mDy = r.nextInt(6) - 3;
 
 				
 				
@@ -308,7 +305,7 @@ public class BubbleActivity extends Activity {
 			} else {
 
 				// TODO - set scaled bitmap size in range [1..3] * BITMAP_SIZE
-				mScaledBitmapWidth = r.nextInt(2) + 1;
+				mScaledBitmapWidth = (r.nextInt(2) + 1) * BITMAP_SIZE;
 
 				
 			}
@@ -414,13 +411,13 @@ public class BubbleActivity extends Activity {
 			
 			// TODO Rotate the canvas by current rotation
 			// Hint - Rotate around the bubble's center, not its position
-			//canvas.rotate(mDRotate, mXPos + (mScaledBitmapWidth / 2), mXPos + (mScaledBitmapWidth / 2));
+			canvas.rotate(mDRotate, mXPos + (mScaledBitmapWidth / 2), mXPos + (mScaledBitmapWidth / 2));
 
 
 			
 			// TODO - draw the bitmap at it's new location
-			//canvas.drawBitmap(mScaledBitmap, mXPos, mYPos, mPainter);
-			canvas.drawBitmap(mBitmap, mXPos, mYPos, mPainter);
+			canvas.drawBitmap(mScaledBitmap, mXPos, mYPos, mPainter);
+			//canvas.drawBitmap(mBitmap, mXPos, mYPos, mPainter);
 
 			
 			// TODO - restore the canvas
