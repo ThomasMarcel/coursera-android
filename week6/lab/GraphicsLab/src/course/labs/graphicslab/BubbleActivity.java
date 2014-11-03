@@ -65,7 +65,8 @@ public class BubbleActivity extends Activity {
 
 		// Set up user interface
 		mFrame = (RelativeLayout) findViewById(R.id.frame);
-
+		mFrame.setVisibility(RelativeLayout.VISIBLE);
+		
 		// Load basic bubble Bitmap
 		mBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.b64);
 
@@ -123,7 +124,7 @@ public class BubbleActivity extends Activity {
 
 	// Set up GestureDetector
 	private void setupGestureDetector() {
-
+		
 		mGestureDetector = new GestureDetector(this,
 		new GestureDetector.SimpleOnGestureListener() {
 
@@ -133,7 +134,7 @@ public class BubbleActivity extends Activity {
 			@Override
 			public boolean onFling(MotionEvent event1, MotionEvent event2,
 					float velocityX, float velocityY) {
-
+				Log.i(TAG, "On Fling");
 				// TODO - Implement onFling actions.
 				// You can get all Views in mFrame one at a time
 				// using the ViewGroup.getChildAt() method
@@ -158,6 +159,7 @@ public class BubbleActivity extends Activity {
 				// TODO - Implement onSingleTapConfirmed actions.
 				// You can get all Views in mFrame using the
 				// ViewGroup.getChildCount() method
+				Log.i(TAG, "On Single Tap Confirmed");
 				Random r = new Random();
 				float randX = (float) r.nextInt(mDisplayWidth) + 1;
 				float randY = (float) r.nextInt(mDisplayHeight) + 1;
@@ -250,7 +252,7 @@ public class BubbleActivity extends Activity {
 			setRotation(r);
 
 			mPainter.setAntiAlias(true);
-
+			
 		}
 
 		private void setRotation(Random r) {
@@ -403,7 +405,7 @@ public class BubbleActivity extends Activity {
 		protected synchronized void onDraw(Canvas canvas) {
 
 			// TODO - save the canvas
-			Canvas mCanvas = canvas;
+			canvas.save();
 
 			
 			// TODO - increase the rotation of the original image by mDRotate
@@ -412,16 +414,17 @@ public class BubbleActivity extends Activity {
 			
 			// TODO Rotate the canvas by current rotation
 			// Hint - Rotate around the bubble's center, not its position
-			mCanvas.rotate(mDRotate, mXPos + (mScaledBitmapWidth / 2), mXPos + (mScaledBitmapWidth / 2));
+			//canvas.rotate(mDRotate, mXPos + (mScaledBitmapWidth / 2), mXPos + (mScaledBitmapWidth / 2));
 
 
 			
 			// TODO - draw the bitmap at it's new location
-			mCanvas.drawBitmap(mScaledBitmap, mXPos, mYPos, mPainter);
+			//canvas.drawBitmap(mScaledBitmap, mXPos, mYPos, mPainter);
+			canvas.drawBitmap(mBitmap, mXPos, mYPos, mPainter);
 
 			
 			// TODO - restore the canvas
-			mCanvas.restore();
+			canvas.restore();
 
 			
 		}
