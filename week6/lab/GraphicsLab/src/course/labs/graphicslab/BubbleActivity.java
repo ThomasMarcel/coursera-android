@@ -256,7 +256,8 @@ public class BubbleActivity extends Activity {
 			if (speedMode == RANDOM) {
 
 				// TODO - set rotation in range [1..3]
-				mDRotate = r.nextInt(2) + 1;
+				//mDRotate = r.nextInt(2) + 1;
+				mDRotate = r.nextInt(360);
 				
 			} else {
 				mDRotate = 0;
@@ -411,7 +412,7 @@ public class BubbleActivity extends Activity {
 			
 			// TODO Rotate the canvas by current rotation
 			// Hint - Rotate around the bubble's center, not its position
-			canvas.rotate(mDRotate, mXPos + (mScaledBitmapWidth / 2), mXPos + (mScaledBitmapWidth / 2));
+			canvas.rotate(mDRotate, mXPos + (mScaledBitmapWidth / 2), mYPos + (mScaledBitmapWidth / 2));
 
 
 			
@@ -433,7 +434,7 @@ public class BubbleActivity extends Activity {
 			// TODO - Move the BubbleView
 			mXPos += mDx;
 			mYPos += mDy;
-
+			this.invalidate();
 
 			
 			
