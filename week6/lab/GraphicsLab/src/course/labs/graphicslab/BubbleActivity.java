@@ -168,6 +168,7 @@ public class BubbleActivity extends Activity {
 					if(currentBubble.intersects(event.getX(), event.getY())) {
 						Log.i(TAG, "Bubble " + i + "(" + currentBubble.mXPos + ":" + currentBubble.mYPos + ") intersects with (" + event.getX() + ":" + event.getY() + ")");
 						currentBubble.stopMovement(true);
+						mFrame.removeViewAt(i);
 						createBubble = false;
 					}
 				}
@@ -394,7 +395,8 @@ public class BubbleActivity extends Activity {
 					public void run() {
 
 						// TODO - Remove the BubbleView from mFrame
-						//mFrame.removeView(this);
+						
+					
 
 						
 						// TODO - If the bubble was popped by user,
