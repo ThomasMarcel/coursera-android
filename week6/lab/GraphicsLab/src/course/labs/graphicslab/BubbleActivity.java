@@ -158,9 +158,10 @@ public class BubbleActivity extends Activity {
 				// TODO - Implement onSingleTapConfirmed actions.
 				// You can get all Views in mFrame using the
 				// ViewGroup.getChildCount() method
-				Random randX = new Random(mDisplayWidth);
-				Random randY = new Random(mDisplayHeight);
-				BubbleView newBubble = new BubbleView(getApplicationContext(), randX.nextFloat(), randY.nextFloat());
+				Random r = new Random();
+				float randX = (float) r.nextInt(mDisplayWidth) + 1;
+				float randY = (float) r.nextInt(mDisplayHeight) + 1;
+				BubbleView newBubble = new BubbleView(getApplicationContext(), randX, randY);
 				mFrame.addView(newBubble);
 				
 				
@@ -305,13 +306,13 @@ public class BubbleActivity extends Activity {
 			} else {
 
 				// TODO - set scaled bitmap size in range [1..3] * BITMAP_SIZE
-				mScaledBitmapWidth = r.nextInt(3);
+				mScaledBitmapWidth = r.nextInt(2) + 1;
 
 				
 			}
 
 			// TODO - create the scaled bitmap using size set above
-			this.mScaledBitmap = Bitmap.createScaledBitmap(mScaledBitmap, mScaledBitmapWidth, mScaledBitmapWidth, false); 
+			mScaledBitmap = Bitmap.createScaledBitmap(mBitmap, mScaledBitmapWidth, mScaledBitmapWidth, false); 
 
 		}
 
@@ -416,7 +417,7 @@ public class BubbleActivity extends Activity {
 
 			
 			// TODO - draw the bitmap at it's new location
-			canvas.drawBitmap(mScaledBitmap, getMatrix(), mPainter);
+			canvas.drawBitmap(mScaledBitmap, mXPos, mYPos, mPainter);
 
 			
 			// TODO - restore the canvas
