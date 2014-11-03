@@ -159,10 +159,24 @@ public class BubbleActivity extends Activity {
 				// TODO - Implement onSingleTapConfirmed actions.
 				// You can get all Views in mFrame using the
 				// ViewGroup.getChildCount() method
+				BubbleView currentBubble;
+				boolean createBubble = true;
 				Log.i(TAG, "On Single Tap Confirmed");
-				BubbleView newBubble = new BubbleView(getApplicationContext(), event.getX(), event.getY());
-				mFrame.addView(newBubble);
 				
+				for(int i = 0; i < mFrame.getChildCount(); i++) {
+					currentBubble = (BubbleView) mFrame.getChildAt(i);
+					if(currentBubble.intersects(event.getX(), event.getY())) {
+						Log.i(TAG, "Bubble " + i + "(" + currentBubble.mXPos + ":" + currentBubble.mYPos + ") intersects with (" + event.getX() + ":" + event.getY() + ")");
+						currentBubble.stopMovement(true);
+						createBubble = false;
+					}
+				}
+				
+				if(createBubble) {
+					BubbleView newBubble = new BubbleView(getApplicationContext(), event.getX(), event.getY());
+					mFrame.addView(newBubble);
+					newBubble.startMovement();
+				}
 				
 				
 				
@@ -248,6 +262,7 @@ public class BubbleActivity extends Activity {
 			// Set the BubbleView's rotation
 			setRotation(r);
 
+			
 			mPainter.setAntiAlias(true);
 			
 		}
@@ -335,7 +350,9 @@ public class BubbleActivity extends Activity {
 					// move one step. If the BubbleView exits the display,
 					// stop the BubbleView's Worker Thread.
 					// Otherwise, request that the BubbleView be redrawn.
-					
+					while(moveWhileOnScreen()) {
+						//Log.i(TAG, "Movement");
+					}
 
 					
 					
@@ -347,14 +364,15 @@ public class BubbleActivity extends Activity {
 
 		// Returns true if the BubbleView intersects position (x,y)
 		private synchronized boolean intersects(float x, float y) {
-
+			Log.i(TAG, mXPos + " <= " + x + " <= " + (mXPos + mScaledBitmapWidth) + " - " + mYPos + " <= " + y + " <= " + (mYPos + mScaledBitmapWidth));
 			// TODO - Return true if the BubbleView intersects position (x,y)
+			if((mXPos <= x && x <= mXPos + mScaledBitmapWidth) && (mYPos <= y && y <= mYPos + mScaledBitmapWidth)) {
+				return true;
+			} else {
+				return false;
+			}
 
 
-
-			
-			
-			return  true || false;
 
 		}
 
@@ -376,7 +394,7 @@ public class BubbleActivity extends Activity {
 					public void run() {
 
 						// TODO - Remove the BubbleView from mFrame
-						//mFrame.removeView(this),
+						//mFrame.removeView(this);
 
 						
 						// TODO - If the bubble was popped by user,
@@ -434,7 +452,7 @@ public class BubbleActivity extends Activity {
 			// TODO - Move the BubbleView
 			mXPos += mDx;
 			mYPos += mDy;
-			this.invalidate();
+			this.postInvalidate();
 
 			
 			
