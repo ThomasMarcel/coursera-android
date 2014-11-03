@@ -417,11 +417,11 @@ public class BubbleActivity extends Activity {
 
 			
 			// TODO - draw the bitmap at it's new location
-			canvas.drawBitmap(mScaledBitmap, mXPos, mYPos, mPainter);
+			mCanvas.drawBitmap(mScaledBitmap, mXPos, mYPos, mPainter);
 
 			
 			// TODO - restore the canvas
-			canvas.restore();
+			mCanvas.restore();
 
 			
 		}
