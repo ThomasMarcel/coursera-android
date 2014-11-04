@@ -184,10 +184,10 @@ public class BubbleActivity extends Activity {
 					Log.i(TAG, "Creating new bubble (" + event.getX() + ":" + event.getY() + ")");
 					mFrame.addView(newBubble);
 					newBubble.startMovement();
-					if(!newBubble.isOutOfView()) {
+					/*if(!newBubble.isOutOfView()) {
 						newBubble.stopMovement(false);
 						mFrame.removeView(newBubble);
-					}
+					}*/
 					Log.i(TAG, "Current bubbles: " + mFrame.getChildCount());
 				}
 				
@@ -343,6 +343,13 @@ public class BubbleActivity extends Activity {
 			mScaledBitmap = Bitmap.createScaledBitmap(mBitmap, mScaledBitmapWidth, mScaledBitmapWidth, false); 
 
 		}
+		
+		private float[] getPosition() {
+			float[] position = new float[2];
+			position[0] = mXPos;
+			position[1] = mYPos;
+			return position;
+		}
 
 		// Start moving the BubbleView & updating the display
 		private void startMovement() {
@@ -364,7 +371,7 @@ public class BubbleActivity extends Activity {
 					// stop the BubbleView's Worker Thread.
 					// Otherwise, request that the BubbleView be redrawn.
 					if (!moveWhileOnScreen()) {
-							Log.i(TAG, "Bubble out of bounds");
+							Log.i(TAG, "Bubble out of bounds (" + getPosition()[0] + ":" + getPosition()[1] + ")");
 							stopMovement(false);
 					}
 					//Log.i(TAG, "Moving (" + mXPos + ":" + mYPos + ")");
@@ -409,15 +416,17 @@ public class BubbleActivity extends Activity {
 					public void run() {
 
 						// TODO - Remove the BubbleView from mFrame
+						BubbleView currentBubble;
 						for(int i = 0; i < mFrame.getChildCount(); i++) {
-							BubbleView currentBubble = (BubbleView) mFrame.getChildAt(i);
-							Log.i(TAG, "Comparing bubble (" + currentBubble.getX() + ":" + currentBubble.getY() + ") with (" + mXPos + ":" + mYPos + ")");
-							//if(currentBubble.getX() == mXPos && currentBubble.getY() == mYPos) {
-							if(currentBubble.getX() == 0.0f && currentBubble.getY() == 0.0f) {
+							currentBubble = (BubbleView) mFrame.getChildAt(i);
+							Log.i(TAG, "Comparing bubble " + i + " (" + currentBubble.getPosition()[0] + ":" + currentBubble.getPosition()[1] + ") with (" + mXPos + ":" + mYPos + ")");
+							if(currentBubble.getPosition()[0] == mXPos && currentBubble.getPosition()[1] == mYPos) {
+							//if(currentBubble.getX() == 0.0f && currentBubble.getY() == 0.0f) {
 								mFrame.removeView(currentBubble);
-								Log.i(TAG, "Bubble removed. " + mFrame.getChildCount() + " bubble(s) present");
+								Log.i(TAG, "Bubble " + i + " removed because of position (0:0). " + mFrame.getChildCount() + " bubble(s) present");
+								break;
 							}
-							Log.i(TAG, "Bubble removed. " + mFrame.getChildCount() + " bubble(s) present");
+							//Log.i(TAG, "Bubble removed. " + mFrame.getChildCount() + " bubble(s) present");
 						}
 						
 					
