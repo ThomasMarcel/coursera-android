@@ -409,9 +409,17 @@ public class BubbleActivity extends Activity {
 					public void run() {
 
 						// TODO - Remove the BubbleView from mFrame
-						BubbleView currentBubble = (BubbleView) findViewById(mFrame.getId());
-						mFrame.removeView(currentBubble);
-						Log.i(TAG, "Bubble removed. " + mFrame.getChildCount() + " bubble(s) present");
+						for(int i = 0; i < mFrame.getChildCount(); i++) {
+							BubbleView currentBubble = (BubbleView) mFrame.getChildAt(i);
+							Log.i(TAG, "Comparing bubble (" + currentBubble.getX() + ":" + currentBubble.getY() + ") with (" + mXPos + ":" + mYPos + ")");
+							//if(currentBubble.getX() == mXPos && currentBubble.getY() == mYPos) {
+							if(currentBubble.getX() == 0.0f && currentBubble.getY() == 0.0f) {
+								mFrame.removeView(currentBubble);
+								Log.i(TAG, "Bubble removed. " + mFrame.getChildCount() + " bubble(s) present");
+							}
+							Log.i(TAG, "Bubble removed. " + mFrame.getChildCount() + " bubble(s) present");
+						}
+						
 					
 
 						
