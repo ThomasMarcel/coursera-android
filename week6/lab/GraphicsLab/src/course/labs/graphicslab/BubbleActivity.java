@@ -138,7 +138,13 @@ public class BubbleActivity extends Activity {
 				// TODO - Implement onFling actions.
 				// You can get all Views in mFrame one at a time
 				// using the ViewGroup.getChildAt() method
-
+				BubbleView currentBubble;
+				for(int i = 0; i < mFrame.getChildCount(); i++) {
+					currentBubble = (BubbleView) mFrame.getChildAt(i);
+					if(currentBubble.intersects(event1.getX(), event1.getY())) {
+						currentBubble.deflect(velocityX, velocityY);
+					}
+				}
 
 				
 				
@@ -175,8 +181,14 @@ public class BubbleActivity extends Activity {
 				
 				if(createBubble) {
 					BubbleView newBubble = new BubbleView(getApplicationContext(), event.getX(), event.getY());
+					Log.i(TAG, "Creating new bubble (" + event.getX() + ":" + event.getY() + ")");
 					mFrame.addView(newBubble);
 					newBubble.startMovement();
+					if(!newBubble.isOutOfView()) {
+						newBubble.stopMovement(false);
+						mFrame.removeView(newBubble);
+					}
+					Log.i(TAG, "Current bubbles: " + mFrame.getChildCount());
 				}
 				
 				
@@ -351,10 +363,12 @@ public class BubbleActivity extends Activity {
 					// move one step. If the BubbleView exits the display,
 					// stop the BubbleView's Worker Thread.
 					// Otherwise, request that the BubbleView be redrawn.
-					while(moveWhileOnScreen()) {
-						//Log.i(TAG, "Movement");
+					if (!moveWhileOnScreen()) {
+							Log.i(TAG, "Bubble out of bounds");
+							stopMovement(false);
 					}
-
+					//Log.i(TAG, "Moving (" + mXPos + ":" + mYPos + ")");
+					
 					
 					
 					
@@ -395,7 +409,9 @@ public class BubbleActivity extends Activity {
 					public void run() {
 
 						// TODO - Remove the BubbleView from mFrame
-						
+						BubbleView currentBubble = (BubbleView) findViewById(mFrame.getId());
+						mFrame.removeView(currentBubble);
+						Log.i(TAG, "Bubble removed. " + mFrame.getChildCount() + " bubble(s) present");
 					
 
 						
@@ -455,6 +471,7 @@ public class BubbleActivity extends Activity {
 			mXPos += mDx;
 			mYPos += mDy;
 			this.postInvalidate();
+			//Log.i(TAG, "Moving (" + mXPos + ":" + mYPos + ")");
 
 			
 			
@@ -470,12 +487,12 @@ public class BubbleActivity extends Activity {
 			// the move operation
 
 			if (mXPos < 0 - mScaledBitmapWidth
-                    || mXPos > mDisplayHeight + mScaledBitmapWidth
+                    || mXPos > mDisplayWidth + mScaledBitmapWidth
                     || mYPos < 0 - mScaledBitmapWidth
-                    || mYPos > mDisplayWidth + mScaledBitmapWidth) {
-				return true;
-			} else {
+                    || mYPos > mDisplayHeight + mScaledBitmapWidth) {
 				return false;
+			} else {
+				return true;
 			}
 
 		}
