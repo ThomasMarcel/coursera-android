@@ -4,9 +4,15 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.widget.RelativeLayout;
+import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Rect;
 
 public class MainActivity extends Activity {
 
@@ -35,5 +41,44 @@ public class MainActivity extends Activity {
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
+	}
+	
+	private class RectangleView extends SurfaceView implements SurfaceHolder.Callback {
+		
+		private final SurfaceHolder mSurfaceHolder;
+        private final Paint mPainter = new Paint();
+        private Thread mDrawingThread;
+		
+		
+		public RectangleView(Context context, int width, int height) {
+			super(context);
+			
+			mPainter.setAntiAlias(true);
+
+            mSurfaceHolder = getHolder();
+            mSurfaceHolder.addCallback(this);
+		}
+		
+		public void draw(Canvas canvas) {
+			canvas.drawColor(Color.MAGENTA);
+			canvas.drawRect(, mPainter);
+		}
+	
+		@Override
+		public void surfaceCreated(SurfaceHolder holder) {
+		
+		}
+	
+		@Override
+		public void surfaceDestroyed(SurfaceHolder holder) {
+		
+		}
+
+		@Override
+		public void surfaceChanged(SurfaceHolder holder, int format, int width,
+				int height) {
+			// TODO Auto-generated method stub
+			
+		}
 	}
 }
