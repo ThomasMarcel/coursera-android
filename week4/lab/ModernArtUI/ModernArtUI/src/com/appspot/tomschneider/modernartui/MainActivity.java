@@ -20,7 +20,7 @@ import android.graphics.Rect;
 
 public class MainActivity extends Activity {
 
-	RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.main_layout);
+	RelativeLayout relativeLayout;
 	
 	private int mDisplayWidth, mDisplayHeight;
 	
@@ -44,6 +44,9 @@ public class MainActivity extends Activity {
 		
 		Log.i(TAG, "MainActivity.onCreate()");
 		setContentView(R.layout.activity_main);
+		
+		relativeLayout = (RelativeLayout) findViewById(R.id.main_layout);
+		
 		RectangleView rectangleView1 = new RectangleView(getApplicationContext());
 		relativeLayout.addView(rectangleView1);
 		Log.i(TAG, "Rectangle at " + rectangleView1.getPosition());
@@ -146,6 +149,7 @@ public class MainActivity extends Activity {
 					}
 				}
 			});
+			mDrawingThread.start();
 		}
 	
 		@Override
