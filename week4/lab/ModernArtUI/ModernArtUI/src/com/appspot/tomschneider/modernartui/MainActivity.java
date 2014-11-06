@@ -42,6 +42,7 @@ public class MainActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
+		Log.i(TAG, "MainActivity.onCreate()");
 		setContentView(R.layout.activity_main);
 		RectangleView rectangleView1 = new RectangleView(getApplicationContext());
 		relativeLayout.addView(rectangleView1);
@@ -118,8 +119,7 @@ public class MainActivity extends Activity {
 			return size;
 		}
 		
-		@Override
-		public void onDraw(Canvas canvas) {
+		private void drawRectangle(Canvas canvas) {
 			canvas.save();
 			
 			canvas.drawColor(Color.MAGENTA);
@@ -140,7 +140,7 @@ public class MainActivity extends Activity {
 					while(!Thread.currentThread().isInterrupted()) {
 						canvas = mSurfaceHolder.lockCanvas();
 						if(null != canvas) {
-							draw(canvas);
+							drawRectangle(canvas);
 							mSurfaceHolder.unlockCanvasAndPost(canvas);
 						}
 					}
