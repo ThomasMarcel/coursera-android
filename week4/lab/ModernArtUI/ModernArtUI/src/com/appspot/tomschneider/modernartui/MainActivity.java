@@ -16,8 +16,8 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.Color;
 
 public class MainActivity extends Activity {
 
@@ -48,6 +48,9 @@ public class MainActivity extends Activity {
 		RectangleView rectangleView1 = new RectangleView(getApplicationContext());
 		relativeLayout.addView(rectangleView1);
 		Log.i(TAG, "Rectangle at " + rectangleView1.getPosition());
+		RectangleView rectangleView2 = new RectangleView(getApplicationContext());
+		relativeLayout.addView(rectangleView2);
+		Log.i(TAG, "Rectangle at " + rectangleView2.getPosition());
 	}
 
 	@Override
@@ -78,7 +81,8 @@ public class MainActivity extends Activity {
         private final Random r = new Random();
         private DisplayMetrics mDisplay;
         private int mDisplayWidth, mDisplayHeight;
-		
+        
+        private int mColor;
 		
 		public RectangleView(Context context) {
 			super(context);
@@ -98,37 +102,87 @@ public class MainActivity extends Activity {
             position = new int[2];
             
             setSizeAndPosition();
+            setColor();
 		}
 		
 		private void setSizeAndPosition() {
 			//Check if there are already rectangles, then draw accordingly to occupy all screen space
-			for (int i = 0; i < relativeLayout.getChildCount(); i++) {
-				if(i != 0) {
-					//CHeck if the second rectangle is longer that the first
-				}
-			}
-			
 			if(mDisplayWidth == 0 || mDisplayHeight == 0) {
 				mDisplayWidth = relativeLayout.getWidth();
 				mDisplayHeight = relativeLayout.getHeight();
 			}
 			Log.i(TAG, "Layout dimensions: [" + mDisplayWidth + ":" + mDisplayHeight + "]");
 			int width = 0;
-			while (width < mDisplayWidth * 1 / 3) {
-				width = r.nextInt(mDisplayWidth * 2 / 3);
-			}
 			int height = 0;
-			while (height < mDisplayHeight * 1 / 4) {
-				height = r.nextInt(mDisplayHeight * 2 / 3);
+			
+			if ( relativeLayout.getChildCount() > 0) {
+				RectangleView currentRect;
+				for (int i = 0; i < relativeLayout.getChildCount(); i++) {
+					currentRect = (RectangleView) relativeLayout.getChildAt(i);
+				}
+				
+				switch (relativeLayout.getChildCount()) {
+					case 1:
+						currentRect = (RectangleView) relativeLayout.getChildAt(0);
+						position[0] = currentRect.getPosition()[0] + currentRect.getSize()[0] + 1;
+						position[1] = 0;
+						width = mDisplayWidth - position[0];
+						while (height < mDisplayHeight * 1 / 4) {
+							height = r.nextInt(mDisplayHeight * 2 / 3);
+						}
+						break;
+				}
+			} else {
+				while (width < mDisplayWidth * 1 / 4) {
+					width = r.nextInt(mDisplayWidth * 2 / 3);
+				}
+				while (height < mDisplayHeight * 1 / 4) {
+					height = r.nextInt(mDisplayHeight * 2 / 3);
+				}
+				
+				position[0] = 0;
+				position[1] = 0;
 			}
 			size[0] = width;
 			size[1] = height;
 			
-			int x = 250;
-			int y = 250;
-			position[0] = x;
-			position[1] = y;
+		}
+		
+		private void setColor() {
+			int[] colorPanel = new int[6];
 			
+            colorPanel[0] = Color.MAGENTA;
+            colorPanel[1] = Color.BLUE;
+            colorPanel[2] = Color.GREEN;
+            colorPanel[3] = Color.YELLOW;
+            colorPanel[4] = Color.RED;
+            colorPanel[5] = Color.WHITE;
+            
+            int rectNumber = relativeLayout.getChildCount();
+        	boolean isWhite = false;
+            if (rectNumber > 0) {
+            	RectangleView rectView;
+            	for (int i = 0; i < rectNumber; i++) {
+            		 rectView = (RectangleView) relativeLayout.getChildAt(i);
+            		 if (rectView.getColor() == Color.WHITE) {
+            			 isWhite = true;
+            		 }
+            	}
+            }
+            
+            if (isWhite) {
+            	mColor = colorPanel[r.nextInt(4)];
+            } else {
+            	if (rectNumber == 4) {
+            		mColor = colorPanel[5];
+            	} else {
+            		mColor = colorPanel[r.nextInt(5)];
+            	}
+            }
+		}
+		
+		public int getColor() {
+			return mColor;
 		}
 		
 		public int[] getPosition() {
@@ -143,8 +197,10 @@ public class MainActivity extends Activity {
 			canvas.save();
 			
 			canvas.drawColor(Color.GRAY);
-			Log.i(TAG, "Drawing rectangle of size " + getSize() + " on position " + getPosition());
-			RectF rect = new RectF(0, 0, getSize()[0], getSize()[1]);
+			Log.i(TAG, "Drawing rectangle of size [" + size[0] + ":" + size[1] + "] on position [" + position[0] + ":" + position[1] + "]");
+			mPainter.setStyle(Paint.Style.FILL_AND_STROKE);
+			mPainter.setColor(mColor);
+			RectF rect = new RectF(getPosition()[0], getPosition()[1], getSize()[0], getSize()[1]);
 			canvas.drawRect(rect, mPainter);
 			
 			canvas.restore();
@@ -156,7 +212,7 @@ public class MainActivity extends Activity {
 	
 		@Override
 		public void surfaceCreated(SurfaceHolder holder) {
-			mDrawingThread = new Thread(new Runnable() {
+			/*mDrawingThread = new Thread(new Runnable() {
 				public void run() {
 					Canvas canvas = null;
 					while(!Thread.currentThread().isInterrupted()) {
@@ -168,7 +224,13 @@ public class MainActivity extends Activity {
 					}
 				}
 			});
-			mDrawingThread.start();
+			mDrawingThread.start();*/
+			Canvas canvas = null;
+			canvas = mSurfaceHolder.lockCanvas();
+			if(null != canvas) {
+				drawRectangle(canvas);
+				mSurfaceHolder.unlockCanvasAndPost(canvas);
+			}
 		}
 	
 		@Override
