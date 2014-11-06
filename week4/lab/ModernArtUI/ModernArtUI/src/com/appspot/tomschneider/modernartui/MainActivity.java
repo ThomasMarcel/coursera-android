@@ -17,12 +17,11 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.RectF;
 
 public class MainActivity extends Activity {
 
 	RelativeLayout relativeLayout;
-	
-	private int mDisplayWidth, mDisplayHeight;
 	
 	private static final String TAG = "Modern-Art-UI";
 	
@@ -30,10 +29,6 @@ public class MainActivity extends Activity {
 	public void onWindowFocusChanged(boolean hasFocus) {
 		super.onWindowFocusChanged(hasFocus);
 		if (hasFocus) {
-
-			// Get the size of the display so this View knows where borders are
-			mDisplayWidth = relativeLayout.getWidth();
-			mDisplayHeight = relativeLayout.getHeight();
 
 		}
 	}
@@ -46,6 +41,9 @@ public class MainActivity extends Activity {
 		setContentView(R.layout.activity_main);
 		
 		relativeLayout = (RelativeLayout) findViewById(R.id.main_layout);
+		
+		//mDisplayWidth = relativeLayout.getWidth();
+		//mDisplayHeight = relativeLayout.getHeight();
 		
 		RectangleView rectangleView1 = new RectangleView(getApplicationContext());
 		relativeLayout.addView(rectangleView1);
@@ -78,10 +76,18 @@ public class MainActivity extends Activity {
         private Thread mDrawingThread;
         private final int[] size, position;
         private final Random r = new Random();
+        private DisplayMetrics mDisplay;
+        private int mDisplayWidth, mDisplayHeight;
 		
 		
 		public RectangleView(Context context) {
 			super(context);
+			
+			mDisplay = new DisplayMetrics();
+            MainActivity.this.getWindowManager().getDefaultDisplay()
+                            .getMetrics(mDisplay);
+            mDisplayWidth = mDisplay.widthPixels;
+            mDisplayHeight = mDisplay.heightPixels;
 			
 			mPainter.setAntiAlias(true);
 
@@ -102,8 +108,19 @@ public class MainActivity extends Activity {
 				}
 			}
 			
-			int width = r.nextInt(mDisplayWidth * 2 / 3);
-			int height = r.nextInt(mDisplayHeight * 2 / 3);
+			if(mDisplayWidth == 0 || mDisplayHeight == 0) {
+				mDisplayWidth = relativeLayout.getWidth();
+				mDisplayHeight = relativeLayout.getHeight();
+			}
+			Log.i(TAG, "Layout dimensions: [" + mDisplayWidth + ":" + mDisplayHeight + "]");
+			int width = 0;
+			while (width < mDisplayWidth * 1 / 3) {
+				width = r.nextInt(mDisplayWidth * 2 / 3);
+			}
+			int height = 0;
+			while (height < mDisplayHeight * 1 / 4) {
+				height = r.nextInt(mDisplayHeight * 2 / 3);
+			}
 			size[0] = width;
 			size[1] = height;
 			
@@ -125,8 +142,10 @@ public class MainActivity extends Activity {
 		private void drawRectangle(Canvas canvas) {
 			canvas.save();
 			
-			canvas.drawColor(Color.MAGENTA);
-			canvas.drawRect(100.0f, 100.0f, 100.0f, 100.0f, mPainter);
+			canvas.drawColor(Color.GRAY);
+			Log.i(TAG, "Drawing rectangle of size " + getSize() + " on position " + getPosition());
+			RectF rect = new RectF(0, 0, getSize()[0], getSize()[1]);
+			canvas.drawRect(rect, mPainter);
 			
 			canvas.restore();
 		}
