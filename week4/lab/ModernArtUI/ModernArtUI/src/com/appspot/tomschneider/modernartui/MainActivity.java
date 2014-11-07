@@ -122,7 +122,7 @@ public class MainActivity extends Activity {
 				switch (relativeLayout.getChildCount()) {
 					case 1:
 						currentRect = (RectangleView) relativeLayout.getChildAt(0);
-						position[0] = currentRect.getPosition()[0] + currentRect.getSize()[0] + 1;
+						position[0] = currentRect.getPosition()[0] + currentRect.getSize()[0];
 						position[1] = 0;
 						width = mDisplayWidth - position[0];
 						while (height < mDisplayHeight * 1 / 4) {
