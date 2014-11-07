@@ -8,6 +8,7 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -44,6 +45,7 @@ public class MainActivity extends Activity {
 		
 		//mDisplayWidth = relativeLayout.getWidth();
 		//mDisplayHeight = relativeLayout.getHeight();
+		Thread mDrawingThread;
 		
 		RectangleView rectangleView1 = new RectangleView(getApplicationContext());
 		relativeLayout.addView(rectangleView1);
@@ -72,9 +74,8 @@ public class MainActivity extends Activity {
 		return super.onOptionsItemSelected(item);
 	}
 	
-	private class RectangleView extends SurfaceView implements SurfaceHolder.Callback {
+	private class RectangleView extends View {
 		
-		private final SurfaceHolder mSurfaceHolder;
         private final Paint mPainter = new Paint();
         private Thread mDrawingThread;
         private final int[] size, position;
@@ -84,7 +85,7 @@ public class MainActivity extends Activity {
         
         private int mColor;
 		
-		public RectangleView(Context context) {
+		RectangleView(Context context) {
 			super(context);
 			
 			mDisplay = new DisplayMetrics();
@@ -94,9 +95,6 @@ public class MainActivity extends Activity {
             mDisplayHeight = mDisplay.heightPixels;
 			
 			mPainter.setAntiAlias(true);
-
-            mSurfaceHolder = getHolder();
-            mSurfaceHolder.addCallback(this);
             
             size = new int[2];
             position = new int[2];
@@ -106,7 +104,7 @@ public class MainActivity extends Activity {
 		}
 		
 		private void setSizeAndPosition() {
-			//Check if there are already rectangles, then draw accordingly to occupy all screen space
+			//Check if there are alreadyS rectangles, then draw accordingly to occupy all screen space
 			if(mDisplayWidth == 0 || mDisplayHeight == 0) {
 				mDisplayWidth = relativeLayout.getWidth();
 				mDisplayHeight = relativeLayout.getHeight();
@@ -193,56 +191,42 @@ public class MainActivity extends Activity {
 			return size;
 		}
 		
-		private void drawRectangle(Canvas canvas) {
+		@Override
+		public void onDraw(Canvas canvas) {
 			canvas.save();
+			String colorString;
+			switch(mColor) {
+				case Color.MAGENTA:
+					colorString = "MAGENTA";
+					break;
+				case Color.BLUE:
+					colorString = "BLUE";
+					break;
+				case Color.GREEN:
+					colorString = "GREEN";
+					break;
+				case Color.YELLOW:
+					colorString = "YELLOW";
+					break;
+				case Color.RED:
+					colorString = "RED";
+					break;
+				case Color.WHITE:
+					colorString = "WHITE";
+					break;
+				default:
+					colorString = "UNKNOWN";
+			}
 			
-			canvas.drawColor(Color.GRAY);
-			Log.i(TAG, "Drawing rectangle of size [" + size[0] + ":" + size[1] + "] on position [" + position[0] + ":" + position[1] + "]");
+			//canvas.drawColor(Color.GRAY);
+			Log.i(TAG, "Drawing " + colorString + " rectangle of size [" + size[0] + ":" + size[1] + "] on position [" + position[0] + ":" + position[1] + "]");
 			mPainter.setStyle(Paint.Style.FILL_AND_STROKE);
 			mPainter.setColor(mColor);
+			
 			RectF rect = new RectF(getPosition()[0], getPosition()[1], getSize()[0], getSize()[1]);
 			canvas.drawRect(rect, mPainter);
 			
 			canvas.restore();
-		}
-		
-		public void start() {
-			
-		}
-	
-		@Override
-		public void surfaceCreated(SurfaceHolder holder) {
-			/*mDrawingThread = new Thread(new Runnable() {
-				public void run() {
-					Canvas canvas = null;
-					while(!Thread.currentThread().isInterrupted()) {
-						canvas = mSurfaceHolder.lockCanvas();
-						if(null != canvas) {
-							drawRectangle(canvas);
-							mSurfaceHolder.unlockCanvasAndPost(canvas);
-						}
-					}
-				}
-			});
-			mDrawingThread.start();*/
-			Canvas canvas = null;
-			canvas = mSurfaceHolder.lockCanvas();
-			if(null != canvas) {
-				drawRectangle(canvas);
-				mSurfaceHolder.unlockCanvasAndPost(canvas);
-			}
-		}
-	
-		@Override
-		public void surfaceDestroyed(SurfaceHolder holder) {
-			mDrawingThread.interrupt();
-		}
-
-		@Override
-		public void surfaceChanged(SurfaceHolder holder, int format, int width,
-				int height) {
-			// TODO Auto-generated method stub
-			
 		}
 	}
 }
