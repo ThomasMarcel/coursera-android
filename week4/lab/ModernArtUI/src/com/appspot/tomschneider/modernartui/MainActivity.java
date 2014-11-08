@@ -14,17 +14,49 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
+import android.widget.Toast;
 
 public class MainActivity extends Activity {
 	
 	private static final String TAG = "ModernArtUI";
+	
+	private SeekBar seekBar = null;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		RelativeLayout layout = (RelativeLayout) findViewById(R.id.layout);
+		//RelativeLayout layout = (RelativeLayout) findViewById(R.id.layout);
+		LinearLayout layout = (LinearLayout) findViewById(R.id.layout);
+		
+		//seekBar = (SeekBar) findViewById(R.id.seekBar1);
+		seekBar = new SeekBar(getApplicationContext());
+		layout.addView(seekBar);
+		seekBar.setVisibility(SeekBar.VISIBLE);
+		seekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+	          int progress = 0;
+	           
+	          @Override
+	          public void onProgressChanged(SeekBar seekBar, int progresValue, boolean fromUser) {
+	              progress = progresValue;
+	              //Toast.makeText(getApplicationContext(), "Changing seekbar's progress", Toast.LENGTH_SHORT).show();
+	          }
+	         
+	          @Override
+	          public void onStartTrackingTouch(SeekBar seekBar) {
+	              //Toast.makeText(getApplicationContext(), "Started tracking seekbar", Toast.LENGTH_SHORT).show();
+	          }
+	         
+	          @Override
+	          public void onStopTrackingTouch(SeekBar seekBar) {
+	              //textView.setText("Covered: " + progress + "/" + seekBar.getMax());
+	              //Toast.makeText(getApplicationContext(), "Stopped tracking seekbar", Toast.LENGTH_SHORT).show();
+	          }
+	       });
 		
 		RectangleSurfaceView mSurface = new RectangleSurfaceView(getApplicationContext());
 		layout.addView(mSurface);
@@ -109,7 +141,7 @@ public class MainActivity extends Activity {
 		public void drawRectangles(Canvas canvas) {
 			canvas.drawColor(Color.DKGRAY);
 			mPainter.setStyle(Paint.Style.FILL_AND_STROKE);
-            mPainter.setColor(getResources().getColor(android.R.color.darker_gray));
+            mPainter.setColor(getResources().getColor(android.R.color.white));
             RectF rect = new RectF(0, 0, mDisplayWidth / 2, mDisplayHeight / 3);
             Log.i(TAG, "Drawing rectangle 1");
             canvas.drawRect(rect, mPainter);
