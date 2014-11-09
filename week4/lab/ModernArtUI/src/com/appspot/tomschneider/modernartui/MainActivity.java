@@ -6,10 +6,12 @@ import android.animation.Animator;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.DisplayMetrics;
@@ -71,8 +73,9 @@ public class MainActivity extends Activity {
 	          @Override
 	          public void onStopTrackingTouch(SeekBar seekBar) {
 	              //textView.setText("Covered: " + progress + "/" + seekBar.getMax());
-	              Toast.makeText(getApplicationContext(), "Stopped tracking seekbar, progress: " + progress, Toast.LENGTH_SHORT).show();
-	              changeAlpha(mSurface, progress);
+	              Toast.makeText(getApplicationContext(), progress + "%", Toast.LENGTH_SHORT).show();
+	              //changeAlpha(mSurface, progress);
+	              mSurface.setAlphaPercent(progress);
 	          }
 	       });
 	}
@@ -117,8 +120,16 @@ public class MainActivity extends Activity {
 		// automatically handle clicks on the Home/Up button, so long
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
-		if (id == R.id.action_settings) {
-			return true;
+		switch (id) {
+			case  R.id.action_moma:
+				Log.i(TAG, "MOMA selected");
+				//Toast.makeText(getApplicationContext(), "Visit MOMA", Toast.LENGTH_LONG);
+				Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.moma.org"));
+				startActivity(browserIntent);
+				break;
+			case R.id.action_notnow:
+				//Toast.makeText(getApplicationContext(), "Not Now", Toast.LENGTH_LONG);
+				break;
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -130,6 +141,7 @@ public class MainActivity extends Activity {
 		private Thread rectangleThread;
 		private DisplayMetrics mDisplay;
 		private int mDisplayWidth, mDisplayHeight;
+		private int alpha;
 		
 		public RectangleSurfaceView(Context context) {
 			super(context);
@@ -146,21 +158,38 @@ public class MainActivity extends Activity {
 
 		@Override
 		public void surfaceCreated(SurfaceHolder holder) {
+			setWillNotDraw(false);
 			// TODO Auto-generated method stub
 			//this.mSurfaceHolder = holder;
-			
+		}
+		
+		@Override
+		public void onDraw(Canvas canvas) {
 			rectangleThread = new Thread( new Runnable() {
 				public void run() {
 						Canvas canvas = null;
 						canvas = mSurfaceHolder.lockCanvas();
 						if (null != canvas) {
 							drawRectangles(canvas);
+							canvas.saveLayerAlpha(new RectF(0, 0, canvas.getWidth(), canvas.getHeight()), alpha, Canvas.HAS_ALPHA_LAYER_SAVE_FLAG);
 							mSurfaceHolder.unlockCanvasAndPost(canvas);
 						}
 				}
 			});
 			rectangleThread.start();
 			
+		}
+		
+		private int getAlphaPercent() {
+			return alpha;
+		}
+		
+		private void setAlphaPercent(int percent) {
+			//rectangleThread.interrupt();
+			alpha = (int) ((float) percent / 100 * 255);
+			invalidate();
+			postInvalidate();
+			Log.i(TAG, "Setting alpha to " + alpha);
 		}
 
 		@Override
@@ -181,11 +210,12 @@ public class MainActivity extends Activity {
 		}
 		
 		public void drawRectangles(Canvas canvas) {
+            Log.i(TAG, "Drawing rectangles with alpha " + alpha);
+            //canvas.save();
 			canvas.drawColor(Color.DKGRAY);
 			mPainter.setStyle(Paint.Style.FILL_AND_STROKE);
             mPainter.setColor(getResources().getColor(android.R.color.white));
             RectF rect = new RectF(0, 0, mDisplayWidth / 2, mDisplayHeight / 3);
-            Log.i(TAG, "Drawing rectangle 1");
             canvas.drawRect(rect, mPainter);
             mPainter.setColor(getResources().getColor(android.R.color.holo_blue_dark));
             rect = new RectF(0, mDisplayHeight / 3, mDisplayWidth / 2, mDisplayHeight * 2 / 3);
@@ -203,6 +233,8 @@ public class MainActivity extends Activity {
             mPainter.setColor(getResources().getColor(android.R.color.holo_purple));
             rect = new RectF(mDisplayWidth / 2, mDisplayHeight * 2 / 3, mDisplayWidth, mDisplayHeight);
             canvas.drawRect(rect, mPainter);
+            canvas.saveLayerAlpha(new RectF(0, 0, mDisplayWidth, mDisplayHeight), alpha, Canvas.HAS_ALPHA_LAYER_SAVE_FLAG);
+            //canvas.restore();
 		}
 
 	}
