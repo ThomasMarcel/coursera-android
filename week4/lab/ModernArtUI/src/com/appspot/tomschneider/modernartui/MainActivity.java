@@ -1,5 +1,6 @@
 package com.appspot.tomschneider.modernartui;
 
+import android.animation.Animator;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
@@ -36,14 +37,21 @@ public class MainActivity extends Activity {
 		//seekBar = (SeekBar) findViewById(R.id.seekBar1);
 		seekBar = new SeekBar(getApplicationContext());
 		layout.addView(seekBar);
+		
+		final RectangleSurfaceView mSurface = new RectangleSurfaceView(getApplicationContext());
+		layout.addView(mSurface);
+		
 		seekBar.setVisibility(SeekBar.VISIBLE);
 		seekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
-	          int progress = 0;
+	          float progress = 0;
 	           
 	          @Override
 	          public void onProgressChanged(SeekBar seekBar, int progresValue, boolean fromUser) {
 	              progress = progresValue;
 	              //Toast.makeText(getApplicationContext(), "Changing seekbar's progress", Toast.LENGTH_SHORT).show();
+	              mSurface.setAlpha(progress / 100);
+	              Log.i(TAG, "Setting alpha: " + (progress / 100));
+	              
 	          }
 	         
 	          @Override
@@ -54,12 +62,9 @@ public class MainActivity extends Activity {
 	          @Override
 	          public void onStopTrackingTouch(SeekBar seekBar) {
 	              //textView.setText("Covered: " + progress + "/" + seekBar.getMax());
-	              //Toast.makeText(getApplicationContext(), "Stopped tracking seekbar", Toast.LENGTH_SHORT).show();
+	              Toast.makeText(getApplicationContext(), "Stopped tracking seekbar, progress: " + progress, Toast.LENGTH_SHORT).show();
 	          }
 	       });
-		
-		RectangleSurfaceView mSurface = new RectangleSurfaceView(getApplicationContext());
-		layout.addView(mSurface);
 	}
 
 	@Override
