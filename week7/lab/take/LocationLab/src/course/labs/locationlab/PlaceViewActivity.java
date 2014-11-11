@@ -140,9 +140,7 @@ public class PlaceViewActivity extends ListActivity implements LocationListener 
 		
 
 		// TODO - register to receive location updates from NETWORK_PROVIDER
-        if (mLastLocationReading == null) {
-        	mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, mMinTime, mMinDistance, this);
-        }
+        mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, mMinTime, mMinDistance, this);
 
 		
 		
@@ -227,8 +225,6 @@ public class PlaceViewActivity extends ListActivity implements LocationListener 
 		if (mLastLocationReading == null) {
 			mLastLocationReading = currentLocation;
 		} else if(ageInMilliseconds(currentLocation) > ageInMilliseconds(mLastLocationReading)) {
-			mLastLocationReading = currentLocation;
-		} else {
 			mLastLocationReading = currentLocation;
 		}
 		
