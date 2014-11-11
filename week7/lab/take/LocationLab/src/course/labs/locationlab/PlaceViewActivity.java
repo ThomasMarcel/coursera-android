@@ -72,6 +72,8 @@ public class PlaceViewActivity extends ListActivity implements LocationListener 
 		// There is a current location for which the user does not already have
 		// a PlaceBadge. In this case download the information needed to make a new
 		// PlaceBadge.
+		
+		final PlaceDownloaderTask mDownloader = new PlaceDownloaderTask(this, sHasNetwork);
 
 		footerView.setOnClickListener(new OnClickListener() {
 
@@ -79,7 +81,12 @@ public class PlaceViewActivity extends ListActivity implements LocationListener 
 			public void onClick(View arg0) {
 				Log.i(TAG, "Entered footerView.OnClickListener.onClick()");
 
-
+				if (mLastLocationReading == null) {
+					Toast.makeText(getApplicationContext(), "No location yet. Disabling button", Toast.LENGTH_LONG);
+				} else {
+					PlaceRecord place = mDownloader.doInBackground(mLastLocationReading);
+					mDownloader.onPostExecute(place);
+				}
 				
 				
 				
@@ -145,8 +152,7 @@ public class PlaceViewActivity extends ListActivity implements LocationListener 
 	protected void onPause() {
 
 		// TODO - unregister for location updates
-
-
+		mLocationManager.removeUpdates(this);
 		
 		
 		shutdownMockLocationManager();
@@ -174,7 +180,19 @@ public class PlaceViewActivity extends ListActivity implements LocationListener 
 		
 		// Otherwise - add the PlaceBadge to the adapter
 		
-
+		if (place == null) {
+			Log.i(TAG, "Place is null");
+			Toast.makeText(getApplicationContext(), "PlaceBadge could not be acquired", Toast.LENGTH_LONG);
+		} else if (mAdapter.intersects(place.getLocation())) {
+			Log.i(TAG, "Place intersects");
+			Toast.makeText(getApplicationContext(), "You already have this location badge.", Toast.LENGTH_LONG);
+		} else if (place.getCountryName() == null || place.getCountryName().length() == 0){
+			Log.i(TAG, "Place has no country");
+			Toast.makeText(getApplicationContext(), "There is no country at this location", Toast.LENGTH_LONG);
+		} else {
+			Log.i(TAG, "Place is valid. Adding");
+			mAdapter.add(place);
+		}
 		
 		
 		
@@ -198,6 +216,7 @@ public class PlaceViewActivity extends ListActivity implements LocationListener 
 	@Override
 	public void onLocationChanged(Location currentLocation) {
 
+		Log.i(TAG, "onLocationChanged");
 		// TODO - Update last location considering the following cases.
 		// 1) If there is no last location, set the last location to the current
 		// location.
@@ -207,8 +226,11 @@ public class PlaceViewActivity extends ListActivity implements LocationListener 
 		// current location.
 		if (mLastLocationReading == null) {
 			mLastLocationReading = currentLocation;
+		} else if(ageInMilliseconds(currentLocation) > ageInMilliseconds(mLastLocationReading)) {
+			mLastLocationReading = currentLocation;
+		} else {
+			mLastLocationReading = currentLocation;
 		}
-		mLocationManager.removeUpdates(this);
 		
 	}
 
