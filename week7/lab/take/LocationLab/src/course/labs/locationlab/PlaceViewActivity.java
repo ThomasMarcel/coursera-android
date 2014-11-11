@@ -1,5 +1,8 @@
 package course.labs.locationlab;
 
+import java.util.Date;
+import java.util.List;
+
 import android.app.ListActivity;
 import android.content.Context;
 import android.location.Location;
@@ -53,7 +56,6 @@ public class PlaceViewActivity extends ListActivity implements LocationListener 
 		
 		LayoutInflater inflater = (LayoutInflater) getApplicationContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		View footerView = (View) inflater.inflate(R.layout.footer_view, null);
-		placesListView.addFooterView(footerView);
 
 		// TODO - footerView must respond to user clicks, handling 3 cases:
 
@@ -112,15 +114,28 @@ public class PlaceViewActivity extends ListActivity implements LocationListener 
 
 		// TODO - Check NETWORK_PROVIDER for an existing location reading.
 		// Only keep this last reading if it is fresh - less than 5 minutes old
-
-		
-		
 		
 		mLastLocationReading = null;
 		
+		Date date, locationDate;
+		date = new Date();
+		Log.i(TAG, "Date: " + date.toString());
+		List<String> matchingProviders = mLocationManager.getAllProviders();
+        for (String provider : matchingProviders) {
+                Location location = mLocationManager.getLastKnownLocation(provider);
+                if (location != null) {
+                	locationDate = new Date(location.getTime() + FIVE_MINS);
+                	if (locationDate.compareTo(date) > 0) {
+                		mLastLocationReading = location;
+                	}
+                }
+        }
+		
 
 		// TODO - register to receive location updates from NETWORK_PROVIDER
-
+        if (mLastLocationReading == null) {
+        	mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, mMinTime, mMinDistance, this);
+        }
 
 		
 		
@@ -190,14 +205,10 @@ public class PlaceViewActivity extends ListActivity implements LocationListener 
 		// the current location
 		// 3) If the current location is newer than the last locations, keep the
 		// current location.
-
-		
-		
-		
-		
-		
-		
-		mLastLocationReading = null;
+		if (mLastLocationReading == null) {
+			mLastLocationReading = currentLocation;
+		}
+		mLocationManager.removeUpdates(this);
 		
 	}
 
