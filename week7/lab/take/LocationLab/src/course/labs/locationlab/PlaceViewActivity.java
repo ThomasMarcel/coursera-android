@@ -39,6 +39,8 @@ public class PlaceViewActivity extends ListActivity implements LocationListener 
 
 	// A fake location provider used for testing
 	private MockLocationProvider mMockLocationProvider;
+	
+	Context mContext;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +55,7 @@ public class PlaceViewActivity extends ListActivity implements LocationListener 
 		// TODO - add a footerView to the ListView
 		// You can use footer_view.xml to define the footer
 
+		mContext = getApplicationContext();
 		
 		LayoutInflater inflater = (LayoutInflater) getApplicationContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		View footerView = (View) inflater.inflate(R.layout.footer_view, null);
@@ -130,7 +133,8 @@ public class PlaceViewActivity extends ListActivity implements LocationListener 
 		List<String> matchingProviders = mLocationManager.getAllProviders();
         for (String provider : matchingProviders) {
                 Location location = mLocationManager.getLastKnownLocation(provider);
-                if (location != null) {
+                //Location location = mLocationManager.getLastKnownLocation(mMockLocationProvider);
+        		if (location != null) {
                 	locationDate = new Date(location.getTime() + FIVE_MINS);
                 	if (locationDate.compareTo(date) > 0) {
                 		mLastLocationReading = location;
@@ -180,13 +184,13 @@ public class PlaceViewActivity extends ListActivity implements LocationListener 
 		
 		if (place == null) {
 			Log.i(TAG, "Place is null");
-			Toast.makeText(getApplicationContext(), "PlaceBadge could not be acquired", Toast.LENGTH_LONG);
+			Toast.makeText(mContext, "PlaceBadge could not be acquired", Toast.LENGTH_LONG);
 		} else if (mAdapter.intersects(place.getLocation())) {
 			Log.i(TAG, "Place intersects");
-			Toast.makeText(getApplicationContext(), "You already have this location badge.", Toast.LENGTH_LONG);
+			Toast.makeText(mContext, "You already have this location badge.", Toast.LENGTH_LONG);
 		} else if (place.getCountryName() == null || place.getCountryName().length() == 0){
 			Log.i(TAG, "Place has no country");
-			Toast.makeText(getApplicationContext(), "There is no country at this location", Toast.LENGTH_LONG);
+			Toast.makeText(mContext, "There is no country at this location", Toast.LENGTH_LONG);
 		} else {
 			Log.i(TAG, "Place is valid. Adding");
 			mAdapter.add(place);
@@ -225,6 +229,8 @@ public class PlaceViewActivity extends ListActivity implements LocationListener 
 		if (mLastLocationReading == null) {
 			mLastLocationReading = currentLocation;
 		} else if(ageInMilliseconds(currentLocation) > ageInMilliseconds(mLastLocationReading)) {
+			mLastLocationReading = currentLocation;
+		} else {
 			mLastLocationReading = currentLocation;
 		}
 		
@@ -265,12 +271,15 @@ public class PlaceViewActivity extends ListActivity implements LocationListener 
 			return true;
 		case R.id.place_one:
 			mMockLocationProvider.pushLocation(37.422, -122.084);
+			Log.i(TAG, "Pushing location 37.422, -122.084");
 			return true;
 		case R.id.place_no_country:
 			mMockLocationProvider.pushLocation(0, 0);
+			Log.i(TAG, "Pushing location 0, 0");
 			return true;
 		case R.id.place_two:
 			mMockLocationProvider.pushLocation(38.996667, -76.9275);
+			Log.i(TAG, "Pushing location 38.996667, -76.9275");
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
