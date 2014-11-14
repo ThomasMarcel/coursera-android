@@ -124,6 +124,7 @@ public class PlaceViewActivity extends ListActivity implements
 
 		// TODO - Create and set empty PlaceViewAdapter
 		mCursorAdapter = new PlaceViewAdapter(this, null, 0);
+		setListAdapter(mCursorAdapter);
 
 		// TODO - Initialize the loader
 		getLoaderManager().initLoader(0, null, this);
