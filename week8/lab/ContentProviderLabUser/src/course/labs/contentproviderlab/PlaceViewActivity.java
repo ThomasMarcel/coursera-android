@@ -235,7 +235,14 @@ public class PlaceViewActivity extends ListActivity implements
 		// the current location
 		// 3) If the current location is newer than the last locations, keep the
 		// current location.
-
+		Log.i(TAG, "onLocationChanged");
+		if (mLastLocationReading == null) {
+            mLastLocationReading = currentLocation;
+		} else if(ageInMilliseconds(currentLocation) > ageInMilliseconds(mLastLocationReading)) {
+            mLastLocationReading = currentLocation;
+		} else {
+            mLastLocationReading = currentLocation;
+		}
 
 		
 		
@@ -262,10 +269,12 @@ public class PlaceViewActivity extends ListActivity implements
 	// LoaderCallback methods
 	@Override
 	public Loader<Cursor> onCreateLoader(int arg0, Bundle arg1) {
-
+		String select = "()";
+		
+		String sortOrder = "";
 		
 		// TODO - Create a new CursorLoader and return it
-		return null;
+		return new CursorLoader();
 	}
 
 	@Override
@@ -273,7 +282,7 @@ public class PlaceViewActivity extends ListActivity implements
 
 		
 		// TODO - Swap in the newCursor
-
+		mCursorAdapter.swapCursor(newCursor);
 	
 	
 	}
@@ -283,7 +292,7 @@ public class PlaceViewActivity extends ListActivity implements
 
 		
 		// TODO - swap in a null Cursor
-
+		mCursorAdapter.swapCursor(null);
 	
 	
 	}
