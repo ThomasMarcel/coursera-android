@@ -265,16 +265,22 @@ public class PlaceViewActivity extends ListActivity implements
 		// not implemented
 	}
 
+	static final String[] PLACES_ROW = new String[] {PlaceBadgesContract._ID,
+		PlaceBadgesContract.FLAG_BITMAP_PATH,
+		PlaceBadgesContract.COUNTRY_NAME,
+		PlaceBadgesContract.PLACE_NAME,
+		PlaceBadgesContract.LAT,
+		PlaceBadgesContract.LON};
 	
 	// LoaderCallback methods
 	@Override
 	public Loader<Cursor> onCreateLoader(int arg0, Bundle arg1) {
-		String select = "()";
-		
-		String sortOrder = "";
 		
 		// TODO - Create a new CursorLoader and return it
-		return new CursorLoader();
+		String select = "(" + PlaceBadgesContract._ID +" NOTNULL)";
+		
+		String sortOrder = PlaceBadgesContract._ID + " ASC";
+		return new CursorLoader(this, PlaceBadgesContract.CONTENT_URI, PLACES_ROW, select, null, sortOrder);
 	}
 
 	@Override
@@ -304,6 +310,7 @@ public class PlaceViewActivity extends ListActivity implements
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
+		Log.i(TAG, "onCreateOptionsMenu");
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.main, menu);
 		return true;
