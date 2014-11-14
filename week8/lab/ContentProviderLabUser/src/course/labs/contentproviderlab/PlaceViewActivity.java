@@ -1,5 +1,8 @@
 package course.labs.contentproviderlab;
 
+import java.util.Date;
+import java.util.List;
+
 import android.app.ListActivity;
 import android.app.LoaderManager.LoaderCallbacks;
 import android.content.Context;
@@ -12,6 +15,7 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -49,6 +53,8 @@ public class PlaceViewActivity extends ListActivity implements
 
 	// A fake location provider used for testing
 	private MockLocationProvider mMockLocationProvider;
+	
+	private Context mContext;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -68,12 +74,15 @@ public class PlaceViewActivity extends ListActivity implements
 		// TODO - add a footerView to the ListView
 		// You can use footer_view.xml to define the footer
 		
-		View footerView = null;
+		mContext = getApplicationContext();
+
+        LayoutInflater inflater = (LayoutInflater) getApplicationContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View footerView = (View) inflater.inflate(R.layout.footer_view, null);
 		
 		// Can be removed after implementing the TODO above
-		if (null == footerView ) {
+		/*if (null == footerView ) {
 			return;
-		}
+		}*/
 
 		// TODO - footerView must respond to user clicks, handling 3 cases:
 
@@ -90,30 +99,22 @@ public class PlaceViewActivity extends ListActivity implements
 		// There is a current location for which the user does not already have
 		// a PlaceBadge. In this case download the information needed to make a new
 		// PlaceBadge.
+        
+        final PlaceDownloaderTask mDownloader = new PlaceDownloaderTask(this, sHasNetwork);
 
 		footerView.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View view) {
 
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
+				Log.i(TAG, "Entered footerView.OnClickListener.onClick()");
+                if (mLastLocationReading == null) {
+                        //Toast.makeText(getApplicationContext(), "No location yet. Disabling button", Toast.LENGTH_LONG);
+                } else {
+                        Toast.makeText(mContext, "Adding place", Toast.LENGTH_LONG);
+                        PlaceRecord place = mDownloader.doInBackground(mLastLocationReading);
+                        mDownloader.onPostExecute(place);
+                }
+
 				
 			}
 
@@ -122,10 +123,10 @@ public class PlaceViewActivity extends ListActivity implements
 		getListView().addFooterView(footerView);
 
 		// TODO - Create and set empty PlaceViewAdapter
-		mCursorAdapter = null;
+		mCursorAdapter = new PlaceViewAdapter(this, null, 0);
 
 		// TODO - Initialize the loader
-		
+		getLoaderManager().initLoader(0, null, this);
 		
 	}
 
@@ -137,15 +138,25 @@ public class PlaceViewActivity extends ListActivity implements
 
 		// TODO - Check NETWORK_PROVIDER for an existing location reading.
 		// Only keep this last reading if it is fresh - less than 5 minutes old
+		mLastLocationReading = null;
 
-		
-		
-		
-		
-		
+        Date date, locationDate;
+        date = new Date();
+        Log.i(TAG, "Date: " + date.toString());
+        List<String> matchingProviders = mLocationManager.getAllProviders();
+        for (String provider : matchingProviders) {
+        	Location location = mLocationManager.getLastKnownLocation(provider);
+        	//Location location = mLocationManager.getLastKnownLocation(mMockLocationProvider);
+                if (location != null) {
+                	locationDate = new Date(location.getTime() + FIVE_MINS);
+                	if (locationDate.compareTo(date) > 0) {
+                        mLastLocationReading = location;
+                	}
+                }
+        }
 		
 		// TODO - register to receive location updates from NETWORK_PROVIDER
-
+        mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, mMinTime, mMinDistance, this);
 
 		
 		
@@ -155,7 +166,7 @@ public class PlaceViewActivity extends ListActivity implements
 	protected void onPause() {
 
 		// TODO - unregister for location updates
-
+		mLocationManager.removeUpdates(this);
 		
 		
 		shutdownMockLocationManager();
@@ -181,7 +192,19 @@ public class PlaceViewActivity extends ListActivity implements
 		// Do not add the PlaceBadge to the adapter
 		
 		// Otherwise - add the PlaceBadge to the adapter
-
+		if (place == null) {
+            Log.i(TAG, "Place is null");
+            Toast.makeText(mContext, "PlaceBadge could not be acquired", Toast.LENGTH_LONG).show();
+		} else if (mCursorAdapter.intersects(place.getLocation())) {
+            Log.i(TAG, "Place intersects");
+            Toast.makeText(mContext, "You already have this location badge.", Toast.LENGTH_LONG).show();
+		} else if (place.getCountryName() == null || place.getCountryName().length() == 0){
+            Log.i(TAG, "Place has no country");
+            Toast.makeText(mContext, "There is no country at this location", Toast.LENGTH_LONG).show();
+		} else {
+            Log.i(TAG, "Place is valid. Adding");
+            mCursorAdapter.add(place);
+		}
 
 		
 		
