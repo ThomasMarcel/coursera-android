@@ -39,7 +39,7 @@ public class MainActivity extends FragmentActivity {
 		if (savedInstanceState == null) {
 			Fragment placeHolderFragment = new PlaceholderFragment();
 			FragmentManager fragmentManager = getSupportFragmentManager();
-			fragmentManager.beginTransaction().add(placeHolderFragment, null).commit();
+			fragmentManager.beginTransaction().add(R.id.container, placeHolderFragment).commit();
 		}
 	}
 	
