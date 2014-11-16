@@ -16,7 +16,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.os.Build;
 import android.provider.MediaStore;
 
@@ -24,7 +26,7 @@ public class MainActivity extends FragmentActivity {
 
 	static final int REQUEST_IMAGE_CAPTURE = 1;
 	
-	int displayWidth, displayHeight;
+	int mDisplayWidth, mDisplayHeight;
 	Bitmap imageBitmap;
 	boolean mReturningWithResult = false;
 	
@@ -109,6 +111,8 @@ public class MainActivity extends FragmentActivity {
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 			View rootView = new PicView(mContext);
+			RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+			rootView.setLayoutParams(params);
 			return rootView;
 		}
 	}
