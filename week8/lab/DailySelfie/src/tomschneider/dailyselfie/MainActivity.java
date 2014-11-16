@@ -105,9 +105,10 @@ public class MainActivity extends FragmentActivity {
 				canvas.drawBitmap(bmp, 0, 0, null);
 			}
 		}
+		
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-			View rootView = PicView();
+			View rootView = new PicView(mContext);
 			return rootView;
 		}
 	}
