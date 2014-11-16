@@ -1,16 +1,24 @@
 package tomschneider.dailyselfie;
 
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import android.app.Activity;
 import android.app.ActionBar;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -19,16 +27,20 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 import android.os.Build;
 import android.provider.MediaStore;
 
 public class MainActivity extends FragmentActivity {
 
 	static final int REQUEST_IMAGE_CAPTURE = 1;
-	
+	static final int REQUEST_TAKE_PHOTO = 1;
+
+	private static final String TAG = "Daily-Selfie";
 	int mDisplayWidth, mDisplayHeight;
 	Bitmap imageBitmap;
 	boolean mReturningWithResult = false;
+	String mCurrentPhotoPath;
 	
 	static Context mContext;
 	
@@ -118,9 +130,25 @@ public class MainActivity extends FragmentActivity {
 	}
 	
 	private void dispatchTakePictureIntent() {
-	    Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+		Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+	    // Ensure that there's a camera activity to handle the intent
 	    if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-	        startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+	        // Create the File where the photo should go
+	        File photoFile = null;
+	        try {
+	            photoFile = createImageFile();
+	        } catch (IOException ex) {
+	        	Log.i(TAG, ex.toString());
+	        	Toast.makeText(mContext, "Couldn't create photo file. Check your external memory. " + ex.toString(), Toast.LENGTH_LONG);
+	            finish();
+	        }
+	        // Continue only if the File was successfully created
+	        if (photoFile != null) {
+	            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,
+	                    Uri.fromFile(photoFile));
+	            Log.i(TAG, "Uri passed to MediaStore.EXTRA_OUTPUT: " + Uri.fromFile(photoFile).toString());
+	            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+	        }
 	    }
 	}
 	
@@ -142,5 +170,31 @@ public class MainActivity extends FragmentActivity {
 	        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 	        transaction.replace(R.id.container, picFragment).commit();
 		}
+	}
+	
+
+	private File createImageFile() throws IOException {
+		// Create an image file name
+		String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+		String imageFileName = "dailyselfie_" + timeStamp;
+		File storageDir;
+		if (Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED) {
+			Log.i(TAG, "Writing to external storage public pictures directory");
+			storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+		} else {
+			Log.i(TAG, "Writing to internal files directory");
+			storageDir = mContext.getFilesDir();
+		}
+		File image = File.createTempFile(
+				imageFileName,  /* prefix */
+				".jpg",         /* suffix */
+				storageDir      /* directory */
+				);
+		image.getParentFile().mkdirs();
+		// Save a file: path for use with ACTION_VIEW intents
+		//mCurrentPhotoPath = "file:" + image.getAbsolutePath();
+		mCurrentPhotoPath = image.getAbsolutePath();
+		Log.i(TAG, "Picture file path: " + mCurrentPhotoPath);
+		return image;
 	}
 }
