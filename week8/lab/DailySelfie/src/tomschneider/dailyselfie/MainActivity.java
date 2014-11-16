@@ -25,7 +25,8 @@ public class MainActivity extends FragmentActivity {
 	static final int REQUEST_IMAGE_CAPTURE = 1;
 	
 	int displayWidth, displayHeight;
-	ImageView mPictureTakenView;
+	Bitmap imageBitmap;
+	boolean mReturningWithResult = false;
 	
 	static Context mContext;
 	
@@ -68,6 +69,7 @@ public class MainActivity extends FragmentActivity {
 	/**
 	 * A placeholder fragment containing a simple view.
 	 */
+
 	public static class PlaceholderFragment extends Fragment {
 
 		public PlaceholderFragment() {
@@ -85,18 +87,27 @@ public class MainActivity extends FragmentActivity {
 	public static class PictureFragment extends Fragment {
 		Bitmap bmp;
 		
-		public PictureFragment(Bitmap bmp) {
-			this.bmp = bmp;
+		public PictureFragment(Bitmap tempbmp) {
+			bmp = tempbmp;
 		}
 		
+		private class PicView extends View {
+			public PicView(Context context) {
+				super(context);
+				// TODO Auto-generated constructor stub
+			}
+
+			@Override
+			protected void onDraw(Canvas canvas) {
+				super.onDraw(canvas);
+				// TODO - Resize bitmap to screen size
+				
+				canvas.drawBitmap(bmp, 0, 0, null);
+			}
+		}
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-			View rootView = new View(mContext);
-			Canvas canvas = null;
-			// TODO - Resize bitmap to screen size
-			
-			canvas.drawBitmap(bmp, 0, 0, null);
-			rootView.draw(canvas);
+			View rootView = PicView();
 			return rootView;
 		}
 	}
@@ -112,11 +123,19 @@ public class MainActivity extends FragmentActivity {
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 	    if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
 	        Bundle extras = data.getExtras();
-	        Bitmap imageBitmap = (Bitmap) extras.get("data");
-	        mPictureTakenView.setImageBitmap(imageBitmap);
-	        Fragment picFragment = new PictureFragment(imageBitmap);
-	        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-	        transaction.replace(R.id.container, picFragment);
+	        imageBitmap = (Bitmap) extras.get("data");
+	        mReturningWithResult = true;
 	    }
+	}
+	
+	@Override
+	protected void onPostResume() {
+		super.onPostResume();
+		
+		if (mReturningWithResult) {
+			Fragment picFragment = new PictureFragment(imageBitmap);
+	        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+	        transaction.replace(R.id.container, picFragment).commit();
+		}
 	}
 }
