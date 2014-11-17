@@ -3,6 +3,6 @@
 
     <string name="app_name">Daily Selfie</string>
     <string name="hello_world">Hello world!</string>
-    <string name="action_picture">Picture</string>
+    <string name="action_settings">Settings</string>
 
 </resources>
