@@ -42,4 +42,9 @@ public class SelfieRecord {
 	public String getName() {
 		return this.mName;
 	}
+	
+	@Override
+	public String toString() {
+		return mName + " on " + mDate.toString();
+	}
 }

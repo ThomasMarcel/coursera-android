@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal" >
+    
+    <ImageView
+        android:id="@+id/selfie_pic"
+        android:layout_width="160dp"
+        android:layout_height="100dp"
+       />
+    
+    <LinearLayout 
+    	android:id="@+id/text_desc"
+    	android:layout_width="wrap_content"
+    	android:layout_height="match_parent"
+    	android:orientation="vertical"
+    	android:layout_toRightOf="@id/selfie_pic"
+    	android:layout_toEndOf="@id/selfie_pic"
+    	android:padding="10dp">
+    	
+        <TextView
+            android:id="@+id/selfie_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" 
+            android:text="Name: "
+            android:singleLine="true"
+            android:ellipsize="end"/>
+        
+        <TextView
+            android:id="@+id/selfie_date"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" 
+            android:text="Date: "
+            android:singleLine="true"
+            android:ellipsize="end"/>
+        
+    </LinearLayout>
+
+</RelativeLayout>
