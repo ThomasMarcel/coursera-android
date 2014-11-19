@@ -31,12 +31,12 @@ import android.widget.Toast;
 public class MainActivity extends ListActivity {
 
 	private static final String TAG = "Daily-Selfie";
+	private static final String FILENAME = "selfielist.txt";
+	private ArrayList<String> selfieList = new ArrayList<String>();
 	
 	private SelfieViewAdapter mAdapter;
-	
 	private static Context mContext;
-	
-	private static final String filename = "selfielist.txt";
+	private ArrayList<Uri> selfieUriList;
 
 	public static final int MEDIA_TYPE_IMAGE = 1;
 	public static final int MEDIA_TYPE_VIDEO = 2;
@@ -53,10 +53,28 @@ public class MainActivity extends ListActivity {
 		
 		mContext = getApplicationContext();
 		
+		selfieUriList = readListFromFile();
+		Log.i(TAG, "Retrieving uri list from file: " + selfieUriList.toString());
+		if (selfieUriList.size() > 0) {
+			
+		}
+		
 		mAdapter = new SelfieViewAdapter(mContext);
 		setListAdapter(mAdapter);
 		
 		//setContentView(R.layout.activity_main);
+	}
+	
+	@Override
+	protected void onPause() {
+		super.onPause();
+		try {
+			writeListToFile(selfieUriList);
+			Log.i(TAG, "Writing selfie uri list to file");
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			Log.i(TAG, "Couldn't write selfie uri list to file: " + e.toString());
+		}
 	}
 
 	@Override
@@ -99,6 +117,7 @@ public class MainActivity extends ListActivity {
 	        		Bitmap imageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), mCurrentPhotoPath);
 	        		SelfieRecord selfie = new SelfieRecord(imageBitmap, mCurrentPhotoPath.toString());
 	        		mAdapter.add(selfie);
+	        		selfieUriList.add(mCurrentPhotoPath);
 	        		setListAdapter(mAdapter);
 	        		Log.i(TAG, "Adding new Selfie " + selfie.getName() + " to adapter");
 	        	} catch (IOException ex) {
@@ -199,49 +218,35 @@ public class MainActivity extends ListActivity {
 	    }
 	}
 	
-	private ArrayList<SelfieRecord> getSelfieList() {
-		if (!getFileStreamPath(filename).exists()) {
+	private void writeListToFile(ArrayList<Uri> list) throws FileNotFoundException {
 
-            try {
-
-                    writeFile(null);
-
-            } catch (FileNotFoundException e) {
-                    Log.i(TAG, "FileNotFoundException");
-            }
-            
-            try {
-
-                readFile(mAdapter);
-
-            } catch (IOException e) {
-                Log.i(TAG, "IOException");
-            }
-		}
-		return null;
-	}
-	
-	private void writeFile(File selfiePath) throws FileNotFoundException {
-
-        FileOutputStream fos = openFileOutput(filename, MODE_PRIVATE);
+        FileOutputStream fos = openFileOutput(FILENAME, MODE_PRIVATE);
 
         PrintWriter pw = new PrintWriter(fos);
 
-        pw.println("Line 1: This is a test of the File Writing API");
-
+        for (int i = 0; i < list.size(); i++) {
+        	pw.println(list.get(i));
+        }
         pw.close();
 
 	}
 
-	private void readFile(SelfieViewAdapter ll) throws IOException {
+	private ArrayList<Uri> readListFromFile() {
+    	ArrayList<Uri> uriList = new ArrayList<Uri>();
 
-        FileInputStream fis = openFileInput(filename);
-        BufferedReader br = new BufferedReader(new InputStreamReader(fis));
+        try {
+        	FileInputStream fis = openFileInput(FILENAME);
+        	BufferedReader br = new BufferedReader(new InputStreamReader(fis));
 
-        String line = "";
-
-        while (null != (line = br.readLine())) {
-        	
-        }
+        	String line = "";
+			while (null != (line = br.readLine())) {
+				uriList.add(Uri.parse(line));
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			Log.i(TAG, "Couldn't retrieve list from file: " + e.toString());
+		}
+        
+        return uriList;
 	}
 }
