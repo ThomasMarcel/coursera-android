@@ -1,8 +1,15 @@
 package com.tomschneider.dailyselfie;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 import android.app.Activity;
@@ -14,10 +21,12 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.provider.MediaStore.Files.FileColumns;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ListView;
+import android.widget.Toast;
 
 public class MainActivity extends ListActivity {
 
@@ -25,7 +34,16 @@ public class MainActivity extends ListActivity {
 	
 	private SelfieViewAdapter mAdapter;
 	
-	private Context mContext;
+	private static Context mContext;
+	
+	private static final String filename = "selfielist.txt";
+
+	public static final int MEDIA_TYPE_IMAGE = 1;
+	public static final int MEDIA_TYPE_VIDEO = 2;
+	private static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
+	private static final int CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE = 200;
+
+	private static int count = 0;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -64,65 +82,166 @@ public class MainActivity extends ListActivity {
 	static final int REQUEST_TAKE_PHOTO = 1;
 	static final int REQUEST_IMAGE_CAPTURE = 1;
 	
-	String mCurrentPhotoPath;
+	Uri mCurrentPhotoPath;
 	
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-	    if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-	        Bundle extras = data.getExtras();
-	        Bitmap imageBitmap = (Bitmap) extras.get("data");
-	        //mImageView.setImageBitmap(imageBitmap);
-	        
-	        SelfieRecord selfie = new SelfieRecord(imageBitmap, mCurrentPhotoPath);
-	        
-	        Log.i(TAG, "Adding new Selfie " + selfie.getName() + " to adapter");
-	        mAdapter.add(selfie);
+	    if (requestCode == CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
+	        if (resultCode == RESULT_OK) {
+	            // Image captured and saved to fileUri specified in the Intent
+	        	if (data != null) {
+	        		Toast.makeText(this, "Image saved to:\n" + data.getData(), Toast.LENGTH_LONG).show();
+	        	} else {
+	        		Toast.makeText(this, "Image saved to:\n" + mCurrentPhotoPath.toString(), Toast.LENGTH_LONG).show();
+	        	}
+	            //Bitmap imageBitmap = new Bitmap();
+	        	try {
+	        		Bitmap imageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), mCurrentPhotoPath);
+	        		SelfieRecord selfie = new SelfieRecord(imageBitmap, mCurrentPhotoPath.toString());
+	        		mAdapter.add(selfie);
+	        		setListAdapter(mAdapter);
+	        		Log.i(TAG, "Adding new Selfie " + selfie.getName() + " to adapter");
+	        	} catch (IOException ex) {
+	        		Log.i(TAG, "Couldn't built bitmap from uri " + mCurrentPhotoPath + ": " + ex.toString());
+	        	}
+		        
+		        Log.i(TAG, "Selfies in adapter: " + mAdapter.getCount());
+	        } else if (resultCode == RESULT_CANCELED) {
+	            // User cancelled the image capture
+	        } else {
+	            // Image capture failed, advise user
+	        }
+	    }
+
+	    if (requestCode == CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE) {
+	        if (resultCode == RESULT_OK) {
+	            // Video captured and saved to fileUri specified in the Intent
+	            Toast.makeText(this, "Video saved to:\n" +
+	                     data.getData(), Toast.LENGTH_LONG).show();
+	        } else if (resultCode == RESULT_CANCELED) {
+	            // User cancelled the video capture
+	        } else {
+	            // Video capture failed, advise user
+	        }
 	    }
 	}
 
-	private File createImageFile() throws IOException {
-	    // Create an image file name
-	    String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmm").format(new Date());
-	    String imageFileName = "selfie_" + timeStamp;
+	/** Create a file Uri for saving an image or video */
+	private static Uri getOutputMediaFileUri(int type){
+		try {
+			return Uri.fromFile(getOutputMediaFile(type));
+		} catch(IOException ex) {
+			return null;
+		}
+	}
+
+	/** Create a File for saving an image or video */
+	private static File getOutputMediaFile(int type) throws IOException{
+	    // To be safe, you should check that the SDCard is mounted
+	    // using Environment.getExternalStorageState() before doing this.
+		
+		File env;
+		if (Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED) {
+			env = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+		} else {
+			env = mContext.getFilesDir();
+		}
+
+	    File mediaStorageDir = new File(env, "DailySelfieApp");
+		//File mediaStorageDir = new File("/sdcard");
+	    // This location works best if you want the created images to be shared
+	    // between applications and persist after your app has been uninstalled.
+
+	    // Create the storage directory if it does not exist
+	    if (! mediaStorageDir.exists()){
+	        if (! mediaStorageDir.mkdirs()){
+	            Log.i(TAG, "failed to create directory");
+	            return null;
+	        }
+	    }
 	    
-	    File storageDir;
-	    if(Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED) {
-	    	storageDir = Environment.getExternalStoragePublicDirectory(
-	            Environment.DIRECTORY_PICTURES);
+	    // Create a media file name
+	    String timeStamp = new SimpleDateFormat("yyyyMMdd").format(new Date());
+	    File mediaFile;
+	    if (type == MEDIA_TYPE_IMAGE){
+	        //mediaFile = new File(mediaStorageDir.getPath() + File.separator + "Selfie"+ timeStamp + ".jpg");
+	    	String filename = "/sdcard/selfie" + count + ".jpg";
+	    	mediaFile = new File(filename);
+	        //mediaFile = new File(mediaStorageDir.getPath() + File.separator + "selfie" + count + ".jpg");
+	    } else if(type == MEDIA_TYPE_VIDEO) {
+	        mediaFile = new File(mediaStorageDir.getPath() + File.separator +
+	        "Selfie_"+ timeStamp + ".mp4");
 	    } else {
-	    	storageDir = mContext.getFilesDir();
+	        return null;
 	    }
-	    File image = File.createTempFile(
-	        imageFileName,  /* prefix */
-	        ".jpg",         /* suffix */
-	        storageDir      /* directory */
-	    );
+	    Log.i(TAG, "mediaFile " + mediaFile.getAbsolutePath().toString());
+	    count += 1;
+	    return mediaFile;
 
-	    // Save a file: path for use with ACTION_VIEW intents
-	    mCurrentPhotoPath = "file:" + image.getAbsolutePath();
-	    Log.i(TAG, "Created temp file " + mCurrentPhotoPath);
-	    return image;
 	}
+
 
 	private void dispatchTakePictureIntent() {
 	    Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 	    // Ensure that there's a camera activity to handle the intent
 	    if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
 	        // Create the File where the photo should go
-	        File photoFile = null;
-	        try {
-	            photoFile = createImageFile();
-	        } catch (IOException ex) {
-	            Log.i(TAG, ex.toString());
-	        }
 	        // Continue only if the File was successfully created
-	        if (photoFile != null) {
-	        	Log.i(TAG, "Taking picture " + Uri.fromFile(photoFile).toString());
+        	Uri fileUri = getOutputMediaFileUri(MEDIA_TYPE_IMAGE);
+        	
+	        if (fileUri != null) {
+	        	Log.i(TAG, "Taking picture " + fileUri.toString());
 	        	
-	            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,
-	                    Uri.fromFile(photoFile));
-	            startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
+	            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
+	            mCurrentPhotoPath = fileUri;
+	            startActivityForResult(takePictureIntent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
 	        }
 	    }
+	}
+	
+	private ArrayList<SelfieRecord> getSelfieList() {
+		if (!getFileStreamPath(filename).exists()) {
+
+            try {
+
+                    writeFile(null);
+
+            } catch (FileNotFoundException e) {
+                    Log.i(TAG, "FileNotFoundException");
+            }
+            
+            try {
+
+                readFile(mAdapter);
+
+            } catch (IOException e) {
+                Log.i(TAG, "IOException");
+            }
+		}
+		return null;
+	}
+	
+	private void writeFile(File selfiePath) throws FileNotFoundException {
+
+        FileOutputStream fos = openFileOutput(filename, MODE_PRIVATE);
+
+        PrintWriter pw = new PrintWriter(fos);
+
+        pw.println("Line 1: This is a test of the File Writing API");
+
+        pw.close();
+
+	}
+
+	private void readFile(SelfieViewAdapter ll) throws IOException {
+
+        FileInputStream fis = openFileInput(filename);
+        BufferedReader br = new BufferedReader(new InputStreamReader(fis));
+
+        String line = "";
+
+        while (null != (line = br.readLine())) {
+        	
+        }
 	}
 }

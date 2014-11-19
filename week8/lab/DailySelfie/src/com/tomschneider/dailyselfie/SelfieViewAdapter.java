@@ -2,7 +2,9 @@ package com.tomschneider.dailyselfie;
 
 import java.util.ArrayList;
 
+import android.app.Activity;
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,9 +17,11 @@ public class SelfieViewAdapter extends BaseAdapter {
 	private ArrayList<SelfieRecord> list = new ArrayList<SelfieRecord>();
 	private static LayoutInflater mInflater = null;
 	private Context mContext;
+	private static final String TAG = "Daily-Selfie";
 	
 	public SelfieViewAdapter(Context context) {
 		mContext = context;
+		mInflater = LayoutInflater.from(mContext);
 	}
 
 	@Override
@@ -67,6 +71,7 @@ public class SelfieViewAdapter extends BaseAdapter {
 		holder.nameView.setText(curr.getName());
 		holder.dateView.setText(curr.getDate().toString());
 		
+		Log.i(TAG, "New view dimentsions: [" + newView.getWidth() + ":" + newView.getHeight() + "]");
 		return newView;
 	}
 	
