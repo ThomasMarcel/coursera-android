@@ -37,6 +37,7 @@ public class MainActivity extends ListActivity {
 	private SelfieViewAdapter mAdapter;
 	private static Context mContext;
 	private ArrayList<Uri> selfieUriList;
+	private ArrayList<Integer> selfieToRemove;
 
 	public static final int MEDIA_TYPE_IMAGE = 1;
 	public static final int MEDIA_TYPE_VIDEO = 2;
@@ -53,13 +54,27 @@ public class MainActivity extends ListActivity {
 		
 		mContext = getApplicationContext();
 		
-		selfieUriList = readListFromFile();
-		Log.i(TAG, "Retrieving uri list from file: " + selfieUriList.toString());
-		if (selfieUriList.size() > 0) {
-			
-		}
-		
 		mAdapter = new SelfieViewAdapter(mContext);
+		
+		selfieUriList = readListFromFile();
+		selfieToRemove = new ArrayList<Integer>();
+		Log.i(TAG, "Retrieving uri list from file: " + selfieUriList.toString() + " of size " + selfieUriList.size());
+		if (selfieUriList.size() > 0) {
+			for (int i = 0; i < selfieUriList.size(); i++) {
+				try {
+					mAdapter.add(new SelfieRecord(mContext, selfieUriList.get(i)));
+				} catch (FileNotFoundException e) {
+					// TODO Auto-generated catch block
+					Log.i(TAG, "Coundn't find file from uri " + selfieUriList.get(i));
+					selfieToRemove.add(i);
+				}
+			}
+		}
+		if (selfieToRemove.size() > 0) {
+			for (int i = selfieToRemove.size() - 1; i >= 0; i--) {
+				selfieUriList.remove(i);
+			}
+		}
 		setListAdapter(mAdapter);
 		
 		//setContentView(R.layout.activity_main);
