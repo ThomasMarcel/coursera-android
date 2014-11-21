@@ -29,6 +29,8 @@ import android.provider.MediaStore.Files.FileColumns;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -36,6 +38,7 @@ public class MainActivity extends ListActivity {
 
 	private static final String TAG = "Daily-Selfie";
 	private static final String FILENAME = "selfielist.txt";
+	public static final String EXTRA_BMP_FILEPATH = "bitmap";
 	private ArrayList<String> selfieList = new ArrayList<String>();
 	
 	private static SelfieViewAdapter mAdapter;
@@ -74,6 +77,7 @@ public class MainActivity extends ListActivity {
 				selfieUriList.remove(i);
 			}
 		}*/
+		
 		setListAdapter(mAdapter);
 		
 		//setContentView(R.layout.activity_main);
@@ -328,5 +332,15 @@ public class MainActivity extends ListActivity {
 		} else {
 			return null;
 		}
+	}
+	
+	@Override
+	protected void onListItemClick (ListView l, View v, int position, long id) {
+	    SelfieRecord selfieRecord = (SelfieRecord) mAdapter.getItem(position);
+	    //Toast.makeText(this, "Clicked row " + position + ". " + selfieRecord.getBmp().toString(), Toast.LENGTH_SHORT).show();
+	    
+	    Intent selfieIntent = new Intent(mContext, SelfieActivity.class);
+	    selfieIntent.putExtra(EXTRA_BMP_FILEPATH, selfieRecord.getBmp().getPath());
+	    startActivity(selfieIntent);
 	}
 }
