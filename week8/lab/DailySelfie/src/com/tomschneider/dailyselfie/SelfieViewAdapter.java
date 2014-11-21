@@ -101,5 +101,18 @@ public class SelfieViewAdapter extends BaseAdapter {
         list.clear();
         this.notifyDataSetChanged();
 	}
+	
+	public int nextInt() {
+		int num = 0;
+		if (list.size() > 0) {
+			for (int i = 0; i < list.size(); i++) {
+				int itemNum = Integer.parseInt(list.get(i).getName().replace("selfie", "").replace(".jpg", ""));
+				if (itemNum > num) {
+					num = itemNum;
+				}
+			}
+		}
+		return num + 1;
+	}
 
 }

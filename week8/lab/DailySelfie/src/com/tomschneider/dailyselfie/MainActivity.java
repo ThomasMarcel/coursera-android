@@ -38,7 +38,7 @@ public class MainActivity extends ListActivity {
 	private static final String FILENAME = "selfielist.txt";
 	private ArrayList<String> selfieList = new ArrayList<String>();
 	
-	private SelfieViewAdapter mAdapter;
+	private static SelfieViewAdapter mAdapter;
 	private static Context mContext;
 	private ArrayList<Uri> selfieUriList;
 	private ArrayList<SelfieRecord> selfieRecordList;
@@ -48,8 +48,6 @@ public class MainActivity extends ListActivity {
 	public static final int MEDIA_TYPE_VIDEO = 2;
 	private static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
 	private static final int CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE = 200;
-
-	private static int count = 0;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -200,6 +198,7 @@ public class MainActivity extends ListActivity {
 	    // Create a media file name
 	    String timeStamp = new SimpleDateFormat("yyyyMMdd").format(new Date());
 	    File mediaFile;
+	    int count = mAdapter.nextInt();
 	    if (type == MEDIA_TYPE_IMAGE){
 	        //mediaFile = new File(mediaStorageDir.getPath() + File.separator + "Selfie"+ timeStamp + ".jpg");
 	    	String filename = "/sdcard/selfie" + count + ".jpg";
@@ -212,7 +211,6 @@ public class MainActivity extends ListActivity {
 	        return null;
 	    }
 	    Log.i(TAG, "mediaFile " + mediaFile.getAbsolutePath().toString());
-	    count += 1;
 	    return mediaFile;
 
 	}
