@@ -14,25 +14,26 @@ import android.util.Log;
 public class SelfieRecord implements Serializable {
 	private String mBmp;
 	private String mName;
-	private Date mDate;
+	private long mDate;
 	
 	private static final String TAG = "Daily-Selfie";
 	
 	public SelfieRecord(Uri bmp, String name) {
 		this.mBmp = bmp.getPath();
 		this.mName = name;
-		this.mDate = new Date();
+		this.mDate = new Date().getTime();
 	}
 	
 	public SelfieRecord() {
-		this.mDate = new Date();
+		Date date = new Date();
+		this.mDate = new Date().getTime();
 		this.mName = "selfie";
 	}
 	
 	public SelfieRecord(Context mContext, Uri selfieUri) throws FileNotFoundException {
 		//this.mBmp = MediaStore.Images.Media.getBitmap(mContext.getContentResolver(), selfieUri);
 		this.mBmp = selfieUri.getPath();
-		this.mDate = new Date();
+		this.mDate = new Date().getTime();
 		if (selfieUri.getLastPathSegment() != null) {
 			this.mName = selfieUri.getLastPathSegment();
 		} else {
@@ -42,7 +43,7 @@ public class SelfieRecord implements Serializable {
 	
 	public SelfieRecord(Context mContext, SelfieRecord selfieRecord) {
 		this.mBmp = selfieRecord.getBmp().getPath();
-		this.mDate = selfieRecord.getDate();
+		this.mDate = selfieRecord.getDate().getTime();
 		this.mName = selfieRecord.getName();
 	}
 	
@@ -55,15 +56,15 @@ public class SelfieRecord implements Serializable {
 	}
 	
 	public void setDate(Date date) {
-		this.mDate = date;
+		this.mDate = date.getTime();
 	}
 	
 	public void setDate(long secs) {
-		this.mDate = new Date(secs);
+		this.mDate = new Date(secs).getTime();
 	}
 	
 	public Date getDate() {
-		return this.mDate;
+		return new Date(this.mDate);
 	}
 	
 	public void setName(String name) {
@@ -76,6 +77,7 @@ public class SelfieRecord implements Serializable {
 	
 	@Override
 	public String toString() {
-		return mName + " on " + mDate.toString();
+		Date date = new Date(this.mDate);
+		return mName + " on " + date.toString();
 	}
 }
