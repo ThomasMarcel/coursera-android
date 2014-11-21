@@ -1,9 +1,12 @@
 package com.tomschneider.dailyselfie;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import android.app.Activity;
 import android.content.Context;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -67,7 +70,13 @@ public class SelfieViewAdapter extends BaseAdapter {
 			holder = (ViewHolder) newView.getTag();
 		}
 		
-		holder.imageView.setImageBitmap(curr.getBmp());
+		try {
+			holder.imageView.setImageBitmap(MediaStore.Images.Media.getBitmap(mContext.getContentResolver(), curr.getBmp()));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			Log.i(TAG, "ioexception while setting holder's imageview: " + e.toString());
+			e.printStackTrace();
+		}
 		holder.nameView.setText(curr.getName());
 		holder.dateView.setText(curr.getDate().toString());
 		

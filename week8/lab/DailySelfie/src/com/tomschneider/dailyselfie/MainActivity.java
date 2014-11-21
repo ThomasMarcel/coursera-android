@@ -2,15 +2,19 @@ package com.tomschneider.dailyselfie;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.regex.Pattern;
 
 import android.app.Activity;
 import android.app.ListActivity;
@@ -37,6 +41,7 @@ public class MainActivity extends ListActivity {
 	private SelfieViewAdapter mAdapter;
 	private static Context mContext;
 	private ArrayList<Uri> selfieUriList;
+	private ArrayList<SelfieRecord> selfieRecordList;
 	private ArrayList<Integer> selfieToRemove;
 
 	public static final int MEDIA_TYPE_IMAGE = 1;
@@ -56,25 +61,21 @@ public class MainActivity extends ListActivity {
 		
 		mAdapter = new SelfieViewAdapter(mContext);
 		
-		selfieUriList = readListFromFile();
+		//selfieUriList = readListFromFile();
+		selfieRecordList = readListFromFile();
 		selfieToRemove = new ArrayList<Integer>();
-		Log.i(TAG, "Retrieving uri list from file: " + selfieUriList.toString() + " of size " + selfieUriList.size());
-		if (selfieUriList.size() > 0) {
-			for (int i = 0; i < selfieUriList.size(); i++) {
-				try {
-					mAdapter.add(new SelfieRecord(mContext, selfieUriList.get(i)));
-				} catch (FileNotFoundException e) {
-					// TODO Auto-generated catch block
-					Log.i(TAG, "Coundn't find file from uri " + selfieUriList.get(i));
-					selfieToRemove.add(i);
-				}
+		
+		Log.i(TAG, "Retrieving uri list from file: " + selfieRecordList.toString() + " of size " + selfieRecordList.size());
+		if (selfieRecordList.size() > 0) {
+			for (int i = 0; i < selfieRecordList.size(); i++) {
+				mAdapter.add(new SelfieRecord(mContext, selfieRecordList.get(i)));
 			}
 		}
-		if (selfieToRemove.size() > 0) {
+		/*if (selfieToRemove.size() > 0) {
 			for (int i = selfieToRemove.size() - 1; i >= 0; i--) {
 				selfieUriList.remove(i);
 			}
-		}
+		}*/
 		setListAdapter(mAdapter);
 		
 		//setContentView(R.layout.activity_main);
@@ -84,7 +85,7 @@ public class MainActivity extends ListActivity {
 	protected void onPause() {
 		super.onPause();
 		try {
-			writeListToFile(selfieUriList);
+			writeListToFile(selfieRecordList);
 			Log.i(TAG, "Writing selfie uri list to file");
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
@@ -129,10 +130,12 @@ public class MainActivity extends ListActivity {
 	        	}
 	            //Bitmap imageBitmap = new Bitmap();
 	        	try {
+	        		//Bitmap imageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), mCurrentPhotoPath);
 	        		Bitmap imageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), mCurrentPhotoPath);
-	        		SelfieRecord selfie = new SelfieRecord(imageBitmap, mCurrentPhotoPath.toString());
+	        		SelfieRecord selfie = new SelfieRecord(mCurrentPhotoPath, mCurrentPhotoPath.getLastPathSegment());
 	        		mAdapter.add(selfie);
-	        		selfieUriList.add(mCurrentPhotoPath);
+	        		//selfieUriList.add(mCurrentPhotoPath);
+	        		selfieRecordList.add(selfie);
 	        		setListAdapter(mAdapter);
 	        		Log.i(TAG, "Adding new Selfie " + selfie.getName() + " to adapter");
 	        	} catch (IOException ex) {
@@ -233,35 +236,99 @@ public class MainActivity extends ListActivity {
 	    }
 	}
 	
-	private void writeListToFile(ArrayList<Uri> list) throws FileNotFoundException {
+	//private void writeListToFile(ArrayList<Uri> list) throws FileNotFoundException {
+	private void writeListToFile(ArrayList<SelfieRecord> list) throws FileNotFoundException {
+
 
         FileOutputStream fos = openFileOutput(FILENAME, MODE_PRIVATE);
 
-        PrintWriter pw = new PrintWriter(fos);
+        //PrintWriter pw = new PrintWriter(fos);
+        ObjectOutputStream os;
+		try {
+			os = new ObjectOutputStream(fos);
 
-        for (int i = 0; i < list.size(); i++) {
-        	pw.println(list.get(i));
-        }
-        pw.close();
+	        for (int i = 0; i < list.size(); i++) {
+	        	//pw.println(list.get(i));
+	        	os.writeObject(list.get(i));
+	        }
+	        //pw.close();
+	        os.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			Log.i(TAG, "Couldn't write object to file: " + e.toString());
+			throw new FileNotFoundException(e.toString());
+		}
 
 	}
 
-	private ArrayList<Uri> readListFromFile() {
-    	ArrayList<Uri> uriList = new ArrayList<Uri>();
+	//private ArrayList<Uri> readListFromFile() {
+	private ArrayList<SelfieRecord> readListFromFile() {
+    	//ArrayList<Uri> uriList = new ArrayList<Uri>();
+		ArrayList<SelfieRecord> list = new ArrayList<SelfieRecord>();
 
         try {
         	FileInputStream fis = openFileInput(FILENAME);
-        	BufferedReader br = new BufferedReader(new InputStreamReader(fis));
+        	//BufferedReader br = new BufferedReader(new InputStreamReader(fis));
+        	ObjectInputStream is = new ObjectInputStream(fis);
 
-        	String line = "";
-			while (null != (line = br.readLine())) {
-				uriList.add(Uri.parse(line));
+        	//String line = "";
+			//while (null != (line = br.readLine())) {
+        	SelfieRecord selfieRecord;
+        	while (null != (selfieRecord = (SelfieRecord) is.readObject())) {
+				//uriList.add(Uri.parse(line));
+        		list.add(selfieRecord);
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			Log.i(TAG, "Couldn't retrieve list from file: " + e.toString());
+			Log.i(TAG,"readListFromFile: Couldn't retrieve list from file: " + e.toString());
+			list = generateSelfieFileList();
+			return list;
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			Log.i(TAG, "readListFromFile: Couldn't read object from file, class not found: " + e.toString());
 		}
         
-        return uriList;
+        //return uriList;
+        return list;
+	}
+	
+	private ArrayList<SelfieRecord> generateSelfieFileList() {
+		File dir = new File("/sdcard/");
+		if (! dir.isDirectory()) {
+			Log.i(TAG, "generateSelfieFileList: " + dir.toString() + " is not a valid directory");
+		}
+		final Pattern p = Pattern.compile("selfie[0-9]*\\.jpg");
+		File[] fileList = dir.listFiles(new FileFilter() {
+
+			@Override
+			public boolean accept(File pathname) {
+				// TODO Auto-generated method stub
+				return p.matcher(pathname.getName()).matches();
+			}
+			
+		});
+		
+		if (fileList.length > 0) {
+			ArrayList<SelfieRecord> selfieList = new ArrayList<SelfieRecord>();
+			for(int i = 0; i < fileList.length; i++) {
+				//Uri fileUri = Uri.fromFile(new File(dir.getAbsolutePath() + fileList[i]));
+				Uri fileUri = Uri.fromFile(fileList[i]);
+				Log.i(TAG, "generateSelfieFileList: uri for file " + fileList[i].toString() + ": " + fileUri.toString());
+				SelfieRecord selfie = new SelfieRecord(fileUri, fileUri.getLastPathSegment());
+				selfie.setDate(fileList[i].lastModified());
+				selfieList.add(selfie);
+			}
+			try {
+				writeListToFile(selfieList);
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				Log.i(TAG, "generateSelfieFileList: file not found. dir: " + dir.toString() + ". pattern: " + p.toString() + ". selfielist: " + selfieList.toString());
+				e.printStackTrace();
+			}
+			
+			return selfieList;
+		} else {
+			return null;
+		}
 	}
 }

@@ -2,6 +2,7 @@ package com.tomschneider.dailyselfie;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Date;
 
 import android.content.Context;
@@ -10,15 +11,15 @@ import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.Log;
 
-public class SelfieRecord {
-	private Bitmap mBmp;
+public class SelfieRecord implements Serializable {
+	private String mBmp;
 	private String mName;
 	private Date mDate;
 	
 	private static final String TAG = "Daily-Selfie";
 	
-	public SelfieRecord(Bitmap bmp, String name) {
-		this.mBmp = bmp;
+	public SelfieRecord(Uri bmp, String name) {
+		this.mBmp = bmp.getPath();
 		this.mName = name;
 		this.mDate = new Date();
 	}
@@ -29,31 +30,36 @@ public class SelfieRecord {
 	}
 	
 	public SelfieRecord(Context mContext, Uri selfieUri) throws FileNotFoundException {
-		try {
-			this.mBmp = MediaStore.Images.Media.getBitmap(mContext.getContentResolver(), selfieUri);
-			this.mDate = new Date();
-			if (selfieUri.getLastPathSegment() != null) {
-				this.mName = selfieUri.getLastPathSegment();
-			} else {
-				this.mName = "selfie";
-			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			Log.i(TAG, "Problem creating selfierecord from context and uri: " + e.toString());
-			throw new FileNotFoundException("uri: " + selfieUri);
+		//this.mBmp = MediaStore.Images.Media.getBitmap(mContext.getContentResolver(), selfieUri);
+		this.mBmp = selfieUri.getPath();
+		this.mDate = new Date();
+		if (selfieUri.getLastPathSegment() != null) {
+			this.mName = selfieUri.getLastPathSegment();
+		} else {
+			this.mName = "selfie";
 		}
 	}
 	
-	public void setBmp(Bitmap bmp) {
-		this.mBmp = bmp;
+	public SelfieRecord(Context mContext, SelfieRecord selfieRecord) {
+		this.mBmp = selfieRecord.getBmp().getPath();
+		this.mDate = selfieRecord.getDate();
+		this.mName = selfieRecord.getName();
 	}
 	
-	public Bitmap getBmp() {
-		return this.mBmp;
+	public void setBmp(Uri bmp) {
+		this.mBmp = bmp.getPath();
+	}
+	
+	public Uri getBmp() {
+		return Uri.parse(this.mBmp);
 	}
 	
 	public void setDate(Date date) {
 		this.mDate = date;
+	}
+	
+	public void setDate(long secs) {
+		this.mDate = new Date(secs);
 	}
 	
 	public Date getDate() {
