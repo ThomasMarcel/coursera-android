@@ -20,10 +20,12 @@ import android.app.Activity;
 import android.app.ListActivity;
 import android.app.Notification;
 import android.app.Notification.Builder;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -35,6 +37,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.RemoteViews;
 import android.widget.Toast;
 
 public class MainActivity extends ListActivity {
@@ -57,6 +60,13 @@ public class MainActivity extends ListActivity {
 	
 	private PendingIntent pendingIntent;
 	private Intent notificationIntent;
+	private final CharSequence tickerText = "You are still missing your Daily Selfie!";
+    private final CharSequence contentText = "You must take your Daily Selfie before midnight!";
+    private static final int NOTIFICATION_ID = 1;
+	
+	RemoteViews mContentView = new RemoteViews(
+            "com.tomschneider.dailyselfie",
+            R.layout.custom_notification);
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -87,6 +97,8 @@ public class MainActivity extends ListActivity {
 		setListAdapter(mAdapter);
 		
 		//setContentView(R.layout.activity_main);
+		
+		sendNotification();
 	}
 	
 	@Override
@@ -353,9 +365,20 @@ public class MainActivity extends ListActivity {
 	private void sendNotification() {
 		notificationIntent = new Intent(mContext, MainActivity.class);
 		pendingIntent = PendingIntent.getActivity(mContext, 0, notificationIntent, Intent.FLAG_ACTIVITY_NEW_TASK);
+		
+		mContentView.setTextViewText(R.id.text, contentText);
+		
+		Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+		
 		Notification.Builder notificationBuilder = new Notification.Builder(mContext)
 			.setSmallIcon(R.drawable.ic_action_camera)
 			.setAutoCancel(true)
-			.setContentIntent(pendingIntent);
+			.setContentIntent(pendingIntent)
+			.setContent(mContentView)
+			.setTicker(tickerText)
+			.setSound(alarmSound);
+		
+		NotificationManager mNotificationManager = (NotificationManager) getSystemService(mContext.NOTIFICATION_SERVICE);
+		mNotificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
 	}
 }
