@@ -33,6 +33,9 @@
             android:name=".SelfieActivity"
             android:label="@string/title_activity_selfie" >
         </activity>
+        
+        <service android:name=".service.ScheduleService" />
+        <service android:name=".service.NotifyService" />
     </application>
 
 </manifest>

@@ -13,22 +13,28 @@ import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.regex.Pattern;
 
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.ListActivity;
 import android.app.Notification;
 import android.app.Notification.Builder;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.graphics.Bitmap;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.IBinder;
+import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.provider.MediaStore.Files.FileColumns;
 import android.util.Log;
@@ -39,6 +45,8 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RemoteViews;
 import android.widget.Toast;
+
+import com.tomschneider.dailyselfie.SelfieNotification;;
 
 public class MainActivity extends ListActivity {
 
@@ -58,21 +66,14 @@ public class MainActivity extends ListActivity {
 	private static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
 	private static final int CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE = 200;
 	
-	private PendingIntent pendingIntent;
-	private Intent notificationIntent;
-	private final CharSequence tickerText = "You are still missing your Daily Selfie!";
-    private final CharSequence contentText = "You must take your Daily Selfie before midnight!";
-    private static final int NOTIFICATION_ID = 1;
-	
-	RemoteViews mContentView = new RemoteViews(
-            "com.tomschneider.dailyselfie",
-            R.layout.custom_notification);
+	private static final int TWO_MINUTES = 2 * 60 * 1000;
+	int alarmType = AlarmManager.ELAPSED_REALTIME;
+	private ScheduleService mBoundService;
+	private boolean mIsBound;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
-		ListView selfieListView = getListView();
 		
 		mContext = getApplicationContext();
 		
@@ -97,8 +98,9 @@ public class MainActivity extends ListActivity {
 		setListAdapter(mAdapter);
 		
 		//setContentView(R.layout.activity_main);
-		
-		sendNotification();
+		doBindService();
+		setAlarmForNotification(TWO_MINUTES);
+		doUnbindService();
 	}
 	
 	@Override
@@ -362,23 +364,49 @@ public class MainActivity extends ListActivity {
 	    startActivity(selfieIntent);
 	}
 	
-	private void sendNotification() {
-		notificationIntent = new Intent(mContext, MainActivity.class);
-		pendingIntent = PendingIntent.getActivity(mContext, 0, notificationIntent, Intent.FLAG_ACTIVITY_NEW_TASK);
-		
-		mContentView.setTextViewText(R.id.text, contentText);
-		
-		Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-		
-		Notification.Builder notificationBuilder = new Notification.Builder(mContext)
-			.setSmallIcon(R.drawable.ic_action_camera)
-			.setAutoCancel(true)
-			.setContentIntent(pendingIntent)
-			.setContent(mContentView)
-			.setTicker(tickerText)
-			.setSound(alarmSound);
-		
-		NotificationManager mNotificationManager = (NotificationManager) getSystemService(mContext.NOTIFICATION_SERVICE);
-		mNotificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
-	}
+	public void doBindService() {
+        // Establish a connection with our service
+        mContext.bindService(new Intent(mContext, ScheduleService.class), mConnection, Context.BIND_AUTO_CREATE);
+        mIsBound = true;
+    }
+     
+    /**
+     * When you attempt to connect to the service, this connection will be called with the result.
+     * If we have successfully connected we instantiate our service object so that we can call methods on it.
+     */
+    private ServiceConnection mConnection = new ServiceConnection() {
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            // This is called when the connection with our service has been established,
+            // giving us the service object we can use to interact with our service.
+            mBoundService = ((ScheduleService.ServiceBinder) service).getService();
+        }
+ 
+        public void onServiceDisconnected(ComponentName className) {
+            mBoundService = null;
+        }
+    };
+    
+    /**
+     * Tell our service to set an alarm for the given date
+     * @param c a date to set the notification for
+     */
+    public void setAlarmForNotification(Calendar c){
+        mBoundService.setAlarm(c);
+    }
+    
+    public void setAlarmForNotification(int millisecs){
+        mBoundService.setAlarm(millisecs);
+    }
+     
+    /**
+     * When you have finished with the service call this method to stop it
+     * releasing your connection and resources
+     */
+    public void doUnbindService() {
+        if (mIsBound) {
+            // Detach our existing connection.
+            mContext.unbindService(mConnection);
+            mIsBound = false;
+        }
+    }
 }
