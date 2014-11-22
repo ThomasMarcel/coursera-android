@@ -18,6 +18,9 @@ import java.util.regex.Pattern;
 
 import android.app.Activity;
 import android.app.ListActivity;
+import android.app.Notification;
+import android.app.Notification.Builder;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -51,6 +54,9 @@ public class MainActivity extends ListActivity {
 	public static final int MEDIA_TYPE_VIDEO = 2;
 	private static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
 	private static final int CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE = 200;
+	
+	private PendingIntent pendingIntent;
+	private Intent notificationIntent;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -342,5 +348,14 @@ public class MainActivity extends ListActivity {
 	    Intent selfieIntent = new Intent(mContext, SelfieActivity.class);
 	    selfieIntent.putExtra(EXTRA_BMP_FILEPATH, selfieRecord.getBmp().getPath());
 	    startActivity(selfieIntent);
+	}
+	
+	private void sendNotification() {
+		notificationIntent = new Intent(mContext, MainActivity.class);
+		pendingIntent = PendingIntent.getActivity(mContext, 0, notificationIntent, Intent.FLAG_ACTIVITY_NEW_TASK);
+		Notification.Builder notificationBuilder = new Notification.Builder(mContext)
+			.setSmallIcon(R.drawable.ic_action_camera)
+			.setAutoCancel(true)
+			.setContentIntent(pendingIntent);
 	}
 }
