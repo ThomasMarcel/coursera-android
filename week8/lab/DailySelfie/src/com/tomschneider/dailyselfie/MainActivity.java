@@ -99,13 +99,19 @@ public class MainActivity extends ListActivity {
 		
 		//setContentView(R.layout.activity_main);
 		doBindService();
-		setAlarmForNotification(TWO_MINUTES);
-		doUnbindService();
+	}
+	
+	@Override
+	protected void onResume() {
+		super.onResume();
+		
+        //Log.i(TAG, "ServiceConnection mBoundService: " + mBoundService.toString());
 	}
 	
 	@Override
 	protected void onPause() {
 		super.onPause();
+		
 		try {
 			writeListToFile(selfieRecordList);
 			Log.i(TAG, "Writing selfie uri list to file");
@@ -113,6 +119,13 @@ public class MainActivity extends ListActivity {
 			// TODO Auto-generated catch block
 			Log.i(TAG, "Couldn't write selfie uri list to file: " + e.toString());
 		}
+	}
+	
+	@Override
+	protected void onStop() {
+		super.onStop();
+		
+		doUnbindService();
 	}
 
 	@Override
@@ -378,7 +391,14 @@ public class MainActivity extends ListActivity {
         public void onServiceConnected(ComponentName className, IBinder service) {
             // This is called when the connection with our service has been established,
             // giving us the service object we can use to interact with our service.
-            mBoundService = ((ScheduleService.ServiceBinder) service).getService();
+        	ScheduleService.ServiceBinder binder = (ScheduleService.ServiceBinder) service;
+            mBoundService = binder.getService();
+            
+    		if (mIsBound) {
+    			setAlarmForNotification(TWO_MINUTES);
+    		}
+
+    		Log.i(TAG, "Service mBoundService: " + mBoundService.toString() + ". mIsBound: " + mIsBound);
         }
  
         public void onServiceDisconnected(ComponentName className) {

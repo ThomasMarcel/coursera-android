@@ -10,6 +10,8 @@ import android.os.IBinder;
 import android.util.Log;
 
 public class NotificationService extends Service {
+	
+	private static final String TAG = "Daily-Selfie";
 	 
     /**
      * Class for clients to access
@@ -38,6 +40,7 @@ public class NotificationService extends Service {
         Log.i("LocalService", "Received start id " + startId + ": " + intent);
          
         // If this service was started by out AlarmTask intent then we want to show our notification
+        Log.i(TAG, "Showing Notification: " + intent.getBooleanExtra(INTENT_NOTIFY, false));
         if(intent.getBooleanExtra(INTENT_NOTIFY, false))
             showNotification();
          

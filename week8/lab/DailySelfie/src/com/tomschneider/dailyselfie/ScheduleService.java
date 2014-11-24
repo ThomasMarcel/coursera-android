@@ -12,6 +12,9 @@ import com.tomschneider.dailyselfie.AlarmTask;
 
 public class ScheduleService extends Service {
  
+    // This is the object that receives interactions from clients. See
+    private final IBinder mBinder = new ServiceBinder();
+ 
     /**
      * Class for clients to access
      */
@@ -33,9 +36,6 @@ public class ScheduleService extends Service {
     public IBinder onBind(Intent intent) {
         return mBinder;
     }
- 
-    // This is the object that receives interactions from clients. See
-    private final IBinder mBinder = new ServiceBinder();
     
     public void setAlarm(Calendar c) {
         // This starts a new thread to set the alarm

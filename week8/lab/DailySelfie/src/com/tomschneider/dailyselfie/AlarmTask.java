@@ -8,6 +8,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.SystemClock;
+import android.util.Log;
  
 import com.tomschneider.dailyselfie.NotificationService;
  
@@ -29,6 +30,8 @@ public class AlarmTask implements Runnable{
     // Your context to retrieve the alarm manager from
     private final Context context;
     private int delay = 0;
+    
+    private static final String TAG = "Daily-Selfie";
  
     public AlarmTask(Context context, Calendar date) {
         this.context = context;
@@ -50,6 +53,7 @@ public class AlarmTask implements Runnable{
     public void run() {
         // Request to start are service when the alarm date is upon us
         // We don't start an activity as we just want to pop up a notification into the system bar not a full activity
+    	Log.i(TAG, "AlarmTask.run");
         Intent intent = new Intent(context, NotificationService.class);
         intent.putExtra(NotificationService.INTENT_NOTIFY, true);
         PendingIntent pendingIntent = PendingIntent.getService(context, 0, intent, 0);
