@@ -395,7 +395,7 @@ public class MainActivity extends ListActivity {
             mBoundService = binder.getService();
             
     		if (mIsBound) {
-    			setAlarmForNotification(TWO_MINUTES);
+    			setAlarmForNotification(5000);
     		}
 
     		Log.i(TAG, "Service mBoundService: " + mBoundService.toString() + ". mIsBound: " + mIsBound);

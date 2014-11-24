@@ -54,15 +54,25 @@ public class AlarmTask implements Runnable{
         // Request to start are service when the alarm date is upon us
         // We don't start an activity as we just want to pop up a notification into the system bar not a full activity
     	Log.i(TAG, "AlarmTask.run");
-        Intent intent = new Intent(context, NotificationService.class);
+    	Intent intent = new Intent(context, NotificationService.class);
         intent.putExtra(NotificationService.INTENT_NOTIFY, true);
         PendingIntent pendingIntent = PendingIntent.getService(context, 0, intent, 0);
-         
+        
+        Log.i(TAG, "intent: " + intent.toURI() + ", pendingintent: " + pendingIntent.toString() + ", delay: " + delay);
+        
+        this.date.add(Calendar.SECOND, 10);
+        
+        //delay = 0;
         // Sets an alarm - note this alarm will be lost if the phone is turned off and on again
         if (this.delay == 0) {
-        	am.set(AlarmManager.RTC, date.getTimeInMillis(), pendingIntent);
+        	Log.i(TAG, "Setting simple alarm");
+        	//am.cancel(pendingIntent);
+        	am.set(AlarmManager.RTC_WAKEUP, new Date().getTime() + 10000, pendingIntent);
         } else {
-        	am.setRepeating(AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime() + 10000, this.delay, pendingIntent);
+        	Log.i(TAG, "Setting repeating alarm with delay " + this.delay);
+        	// SystemClock.elapsedRealtime()
+        	//am.cancel(pendingIntent);
+        	am.setRepeating(AlarmManager.RTC_WAKEUP, this.date.getTimeInMillis(), this.delay, pendingIntent);
         }
     }
 }
