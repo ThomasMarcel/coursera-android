@@ -1,5 +1,6 @@
 package com.tomschneider.dailyselfie;
 
+import android.app.IntentService;
 import android.app.Notification;
 import android.app.Notification.Builder;
 import android.app.NotificationManager;
@@ -11,8 +12,13 @@ import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
-public class NotificationService extends Service {
+public class NotificationService extends IntentService {
 	
+	public NotificationService(String name) {
+		super(name);
+		// TODO Auto-generated constructor stub
+	}
+
 	private static final String TAG = "Daily-Selfie";
 	 
     /**
@@ -97,4 +103,12 @@ public class NotificationService extends Service {
         // Stop the service when we are finished
         stopSelf();
     }
+
+	@Override
+	protected void onHandleIntent(Intent intent) {
+		// TODO Auto-generated method stub
+		Log.i(TAG, "NotificationService onHandleIntent");
+		mNM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+		showNotification();
+	}
 }

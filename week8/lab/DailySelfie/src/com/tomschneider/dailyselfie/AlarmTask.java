@@ -56,7 +56,7 @@ public class AlarmTask implements Runnable{
     	Log.i(TAG, "AlarmTask.run");
     	Intent intent = new Intent(context, NotificationService.class);
         intent.putExtra(NotificationService.INTENT_NOTIFY, true);
-        PendingIntent pendingIntent = PendingIntent.getService(context, 0, intent, 0);
+        PendingIntent pendingIntent = PendingIntent.getService(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         
         Log.i(TAG, "intent: " + intent.toURI() + ", pendingintent: " + pendingIntent.toString() + ", delay: " + delay);
         
@@ -72,7 +72,8 @@ public class AlarmTask implements Runnable{
         	Log.i(TAG, "Setting repeating alarm with delay " + this.delay);
         	// SystemClock.elapsedRealtime()
         	//am.cancel(pendingIntent);
-        	am.setRepeating(AlarmManager.RTC_WAKEUP, this.date.getTimeInMillis(), this.delay, pendingIntent);
+        	//am.setRepeating(AlarmManager.RTC_WAKEUP, this.date.getTimeInMillis(), this.delay, pendingIntent);
+        	am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, AlarmManager.INTERVAL_FIFTEEN_MINUTES, AlarmManager.INTERVAL_FIFTEEN_MINUTES, pendingIntent);
         }
     }
 }

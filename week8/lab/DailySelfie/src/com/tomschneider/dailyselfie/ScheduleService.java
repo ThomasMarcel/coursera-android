@@ -2,6 +2,7 @@ package com.tomschneider.dailyselfie;
 
 import java.util.Calendar;
 
+import android.app.IntentService;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -11,9 +12,21 @@ import android.util.Log;
 
 import com.tomschneider.dailyselfie.AlarmTask;
 
-public class ScheduleService extends Service {
+public class ScheduleService extends IntentService {
+	
+	private static final String TAG = "Daily-Selfie";
  
-    // This is the object that receives interactions from clients. See
+    public ScheduleService(String name) {
+		super(name);
+		// TODO Auto-generated constructor stub
+		Log.i(TAG, "ScheduleService constructor");
+	}
+    
+    public ScheduleService() {
+    	super("SceduleService");
+    }
+
+	// This is the object that receives interactions from clients. See
     private final IBinder mBinder = new ServiceBinder();
  
     /**
@@ -47,4 +60,10 @@ public class ScheduleService extends Service {
     public void setAlarm(int millisecs) {
     	new AlarmTask(this, millisecs).run();
     }
+
+	@Override
+	protected void onHandleIntent(Intent intent) {
+		// TODO Auto-generated method stub
+		Log.i(TAG, "ScheduleService onHandleIntent");
+	}
 }
