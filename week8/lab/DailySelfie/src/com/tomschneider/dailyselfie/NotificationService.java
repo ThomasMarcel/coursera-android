@@ -15,6 +15,7 @@ import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+import android.widget.RemoteViews;
 
 public class NotificationService extends Service {
 	private WakeLock mWakeLock; 
@@ -26,6 +27,7 @@ public class NotificationService extends Service {
 	private static final int NOTIFICATION = 1;
 	
 	private NotificationManager mNM;
+	private RemoteViews mRemoteViews;
 	
 	/** 
 	* Simply return null, since our Service will not be communicating with 
@@ -129,13 +131,13 @@ public class NotificationService extends Service {
 		Log.i(TAG, "NotificationService.showNotification");
 		
 		// This is the 'title' of the notification
-		CharSequence title = "Alarm!!";
+		CharSequence title = "Daily Selfie!!";
 		
 		// This is the icon to use on the notification
 		int icon = R.drawable.ic_action_camera;
 		
 		// This is the scrolling text of the notification
-		CharSequence text = "Your notification time is upon us.";
+		CharSequence text = "Time for another selfie!";
 		
 		// What time to show on the notification
 		long time = System.currentTimeMillis();
@@ -148,11 +150,17 @@ public class NotificationService extends Service {
 		//notification.setLatestEventInfo(this, title, text, contentIntent);
 		// Clear the notification when it is pressed
 		//notification.flags |= Notification.FLAG_AUTO_CANCEL;
+		mRemoteViews = new RemoteViews(this.getPackageName(), R.layout.custom_notification);
+		mRemoteViews.setImageViewResource(R.id.image, R.drawable.ic_action_camera);
+		mRemoteViews.setTextViewText(R.id.text, text);
+		
 		Notification.Builder notificationBuilder = new Notification.Builder(this)
 		.setSmallIcon(icon)
 		.setContentTitle(title)
 		.setContentText(text)
 		.setContentIntent(contentIntent)
+		.setContent(mRemoteViews)
+		.setTicker(title)
 		.setAutoCancel(true);
 		
 		// Send the notification to the system.

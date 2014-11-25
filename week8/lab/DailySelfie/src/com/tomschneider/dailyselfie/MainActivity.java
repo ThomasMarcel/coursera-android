@@ -15,6 +15,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.TimeZone;
 import java.util.regex.Pattern;
 
 import android.app.Activity;
@@ -98,14 +99,20 @@ public class MainActivity extends ListActivity {
 		}*/
 		
 		setListAdapter(mAdapter);
-		
+		cancelNotification();
 		//setContentView(R.layout.activity_main);
 		//doBindService();
-		Log.i(TAG, "Sending notification");
-		sendNotification();
+		setLastPicTime(selfieRecordList);
+		if (isPictureOld(getLastPicTime())) {
+			Log.i(TAG, "Pic is old (" + new Date(getLastPicTime()).toString() + "), setting the notification for ASAP");
+			sendNotification(0);
+		} else {
+			Log.i(TAG, "Pic is young (" + new Date(getLastPicTime()).toString() + "), setting the notification for the following day: " + new Date(followingDay(getLastPicTime())).toString());
+			sendNotification(followingDay(getLastPicTime()));
+		}
 	}
 	
-	private void sendNotification() {
+	public void sendNotification(long millis) {
 		Log.i(TAG, "MainActivity.sendNotification");
         //Log.i(TAG, "ServiceConnection mBoundService: " + mBoundService.toString());
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this); 
@@ -115,11 +122,20 @@ public class MainActivity extends ListActivity {
 		PendingIntent pi = PendingIntent.getService(this, 0, i, 0); am.cancel(pi); 
 		
 		Log.i(TAG, "Intent: " + i.toString() + ", PendingIntent: " + pi.toString() + ", minutes: " + minutes);
-		
 		// by my own convention, minutes <= 0 means notifications are disabled 
-		if (minutes > 0) { 
-			am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + minutes*60*1000, minutes*60*1000, pi); 
+		if (millis == 0) { 
+			am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime() + minutes*60*1000, minutes*60*1000, pi); 
+		} else {
+			am.setInexactRepeating(AlarmManager.RTC, millis, minutes*60*1000, pi);
 		}
+	}
+	
+	public void cancelNotification() {
+		Log.i(TAG, "Cancelling alarms");
+		AlarmManager am = (AlarmManager) getSystemService(ALARM_SERVICE); 
+		Intent i = new Intent(mContext, NotificationService.class); 
+		PendingIntent pi = PendingIntent.getService(this, 0, i, 0); am.cancel(pi);
+		am.cancel(pi);
 	}
 	
 	@Override
@@ -130,6 +146,8 @@ public class MainActivity extends ListActivity {
 	@Override
 	protected void onPause() {
 		super.onPause();
+		
+		setLastPicTime(selfieRecordList);
 		
 		try {
 			writeListToFile(selfieRecordList);
@@ -190,6 +208,7 @@ public class MainActivity extends ListActivity {
 	        		mAdapter.add(selfie);
 	        		//selfieUriList.add(mCurrentPhotoPath);
 	        		selfieRecordList.add(selfie);
+	        		setLastPicTime(selfieRecordList);
 	        		setListAdapter(mAdapter);
 	        		Log.i(TAG, "Adding new Selfie " + selfie.getName() + " to adapter");
 	        	} catch (IOException ex) {
@@ -384,6 +403,53 @@ public class MainActivity extends ListActivity {
 		} else {
 			return null;
 		}
+	}
+	
+	public static long getLastPicTime() {
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext); 
+		long lastPicTime = prefs.getLong("lastpictime", 0);
+		
+		return lastPicTime;
+	}
+	
+	private void setLastPicTime(ArrayList<SelfieRecord> list) {
+		long millis = 0;
+		if (list.size() > 0) {
+			for (int i = 0; i < list.size(); i++) {
+				if (list.get(i).getDate().getTime() > millis) {
+					millis = list.get(i).getDate().getTime();
+				}
+			}
+		}
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext); 
+		SharedPreferences.Editor editor = prefs.edit();
+		editor.putLong("lastpictime", millis);
+		editor.commit();
+	}
+	
+	public static boolean isPictureOld (long oldPicMillis) {
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(new Date());
+		cal.set(Calendar.HOUR_OF_DAY, 12);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.add(Calendar.DATE, 1);
+		if (oldPicMillis + 24 * 60 * 60 * 1000 > cal.getTimeInMillis()) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+	
+	public static long followingDay (long millis) {
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(new Date(millis));
+		cal.set(Calendar.HOUR_OF_DAY, 12);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.add(Calendar.DATE, 1);
+		Log.i(TAG, "Timezone: " + TimeZone.getDefault().toString());
+		return cal.getTimeInMillis();
 	}
 	
 	@Override
