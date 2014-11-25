@@ -28,6 +28,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -35,6 +36,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
 import android.os.SystemClock;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.provider.MediaStore.Files.FileColumns;
 import android.util.Log;
@@ -46,7 +48,7 @@ import android.widget.ListView;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
-import com.tomschneider.dailyselfie.SelfieNotification;;
+//import com.tomschneider.dailyselfie.SelfieNotification;;
 
 public class MainActivity extends ListActivity {
 
@@ -68,7 +70,7 @@ public class MainActivity extends ListActivity {
 	
 	private static final int TWO_MINUTES = 2 * 60 * 1000;
 	int alarmType = AlarmManager.ELAPSED_REALTIME;
-	private ScheduleService mBoundService;
+	//private ScheduleService mBoundService;
 	private boolean mIsBound;
 	
 	@Override
@@ -98,14 +100,31 @@ public class MainActivity extends ListActivity {
 		setListAdapter(mAdapter);
 		
 		//setContentView(R.layout.activity_main);
-		doBindService();
+		//doBindService();
+		Log.i(TAG, "Sending notification");
+		sendNotification();
+	}
+	
+	private void sendNotification() {
+		Log.i(TAG, "MainActivity.sendNotification");
+        //Log.i(TAG, "ServiceConnection mBoundService: " + mBoundService.toString());
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this); 
+		int minutes = prefs.getInt("interval", 2); 
+		AlarmManager am = (AlarmManager) getSystemService(ALARM_SERVICE); 
+		Intent i = new Intent(mContext, NotificationService.class); 
+		PendingIntent pi = PendingIntent.getService(this, 0, i, 0); am.cancel(pi); 
+		
+		Log.i(TAG, "Intent: " + i.toString() + ", PendingIntent: " + pi.toString() + ", minutes: " + minutes);
+		
+		// by my own convention, minutes <= 0 means notifications are disabled 
+		if (minutes > 0) { 
+			am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + minutes*60*1000, minutes*60*1000, pi); 
+		}
 	}
 	
 	@Override
 	protected void onResume() {
 		super.onResume();
-		
-        //Log.i(TAG, "ServiceConnection mBoundService: " + mBoundService.toString());
 	}
 	
 	@Override
@@ -125,7 +144,7 @@ public class MainActivity extends ListActivity {
 	protected void onStop() {
 		super.onStop();
 		
-		doUnbindService();
+		//doUnbindService();
 	}
 
 	@Override
@@ -376,17 +395,18 @@ public class MainActivity extends ListActivity {
 	    selfieIntent.putExtra(EXTRA_BMP_FILEPATH, selfieRecord.getBmp().getPath());
 	    startActivity(selfieIntent);
 	}
-	
+	/*
 	public void doBindService() {
         // Establish a connection with our service
         mContext.bindService(new Intent(mContext, ScheduleService.class), mConnection, Context.BIND_AUTO_CREATE);
         mIsBound = true;
     }
-     
+     */
     /**
      * When you attempt to connect to the service, this connection will be called with the result.
      * If we have successfully connected we instantiate our service object so that we can call methods on it.
      */
+	/*
     private ServiceConnection mConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
             // This is called when the connection with our service has been established,
@@ -405,23 +425,26 @@ public class MainActivity extends ListActivity {
             mBoundService = null;
         }
     };
-    
+    */
     /**
      * Tell our service to set an alarm for the given date
      * @param c a date to set the notification for
      */
+    /*
     public void setAlarmForNotification(Calendar c){
         mBoundService.setAlarm(c);
     }
-    
+    */
+    /*
     public void setAlarmForNotification(int millisecs){
         mBoundService.setAlarm(millisecs);
     }
-     
+     */
     /**
      * When you have finished with the service call this method to stop it
      * releasing your connection and resources
      */
+    /*
     public void doUnbindService() {
         if (mIsBound) {
             // Detach our existing connection.
@@ -429,4 +452,5 @@ public class MainActivity extends ListActivity {
             mIsBound = false;
         }
     }
+    */
 }
