@@ -26,6 +26,7 @@ import android.app.Notification.Builder;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ComponentName;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
@@ -40,6 +41,7 @@ import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.provider.MediaStore.Files.FileColumns;
+import android.provider.MediaStore.Images.Media;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -54,7 +56,7 @@ import android.widget.Toast;
 public class MainActivity extends ListActivity {
 
 	private static final String TAG = "Daily-Selfie";
-	private static final String FILENAME = "selfielist.txt";
+	private static final String DIRNAME = "dailyselfie";
 	public static final String EXTRA_BMP_FILEPATH = "bitmap";
 	private ArrayList<String> selfieList = new ArrayList<String>();
 	
@@ -71,8 +73,8 @@ public class MainActivity extends ListActivity {
 	
 	private static final int TWO_MINUTES = 2 * 60 * 1000;
 	int alarmType = AlarmManager.ELAPSED_REALTIME;
-	//private ScheduleService mBoundService;
-	private boolean mIsBound;
+	
+	private static File mediaStorageDir;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -82,8 +84,20 @@ public class MainActivity extends ListActivity {
 		
 		mAdapter = new SelfieViewAdapter(mContext);
 		
+		if (Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED) {
+			mediaStorageDir = Environment.getExternalStorageDirectory();
+		} else {
+			mediaStorageDir = mContext.getFilesDir();
+		}
+		
+		//mediaStorageDir = mContext.getFilesDir();
+		
+		if (!mediaStorageDir.exists()) {
+			mediaStorageDir.mkdirs();
+		}
+		
 		//selfieUriList = readListFromFile();
-		selfieRecordList = readListFromFile();
+		selfieRecordList = generateSelfieFileList();
 		selfieToRemove = new ArrayList<Integer>();
 		
 		Log.i(TAG, "Retrieving uri list from file: " + selfieRecordList.toString() + " of size " + selfieRecordList.size());
@@ -148,14 +162,6 @@ public class MainActivity extends ListActivity {
 		super.onPause();
 		
 		setLastPicTime(selfieRecordList);
-		
-		try {
-			writeListToFile(selfieRecordList);
-			Log.i(TAG, "Writing selfie uri list to file");
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			Log.i(TAG, "Couldn't write selfie uri list to file: " + e.toString());
-		}
 	}
 	
 	@Override
@@ -250,14 +256,9 @@ public class MainActivity extends ListActivity {
 	    // To be safe, you should check that the SDCard is mounted
 	    // using Environment.getExternalStorageState() before doing this.
 		
-		File env;
-		if (Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED) {
-			env = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
-		} else {
-			env = mContext.getFilesDir();
-		}
+		//env = mContext.getDir(DIRNAME, Context.MODE_PRIVATE);
+		//env = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
 
-	    File mediaStorageDir = new File(env, "DailySelfieApp");
 		//File mediaStorageDir = new File("/sdcard");
 	    // This location works best if you want the created images to be shared
 	    // between applications and persist after your app has been uninstalled.
@@ -276,16 +277,23 @@ public class MainActivity extends ListActivity {
 	    int count = mAdapter.nextInt();
 	    if (type == MEDIA_TYPE_IMAGE){
 	        //mediaFile = new File(mediaStorageDir.getPath() + File.separator + "Selfie"+ timeStamp + ".jpg");
-	    	String filename = "/sdcard/selfie" + count + ".jpg";
-	    	mediaFile = new File(filename);
+	    	//String filename = mediaStorageDir.getAbsolutePath() + File.separator + "selfie" + count + ".jpg";
+	    	String filename = "selfie" + count + ".jpg";
+	    	//String filename = "/sdcard/selfie" + count + ".jpg";
+	    	mediaFile = new File(mediaStorageDir, filename);
+	    	//mediaFile = new File(filename);
 	        //mediaFile = new File(mediaStorageDir.getPath() + File.separator + "selfie" + count + ".jpg");
+	    	if (! mediaFile.exists()) {
+	    		mediaFile.createNewFile();
+	    	}
+	    	mediaFile.setWritable(true, false);
 	    } else if(type == MEDIA_TYPE_VIDEO) {
 	        mediaFile = new File(mediaStorageDir.getPath() + File.separator +
 	        "Selfie_"+ timeStamp + ".mp4");
 	    } else {
 	        return null;
 	    }
-	    Log.i(TAG, "mediaFile " + mediaFile.getAbsolutePath().toString());
+	    Log.i(TAG, "MainActivity.getOutputMediaFile mediaFile " + mediaFile.getAbsolutePath().toString());
 	    return mediaFile;
 
 	}
@@ -309,64 +317,9 @@ public class MainActivity extends ListActivity {
 	    }
 	}
 	
-	//private void writeListToFile(ArrayList<Uri> list) throws FileNotFoundException {
-	private void writeListToFile(ArrayList<SelfieRecord> list) throws FileNotFoundException {
-
-
-        FileOutputStream fos = openFileOutput(FILENAME, MODE_PRIVATE);
-
-        //PrintWriter pw = new PrintWriter(fos);
-        ObjectOutputStream os;
-		try {
-			os = new ObjectOutputStream(fos);
-
-	        for (int i = 0; i < list.size(); i++) {
-	        	//pw.println(list.get(i));
-	        	os.writeObject(list.get(i));
-	        }
-	        //pw.close();
-	        os.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			Log.i(TAG, "Couldn't write object to file: " + e.toString());
-			throw new FileNotFoundException(e.toString());
-		}
-
-	}
-
-	//private ArrayList<Uri> readListFromFile() {
-	private ArrayList<SelfieRecord> readListFromFile() {
-    	//ArrayList<Uri> uriList = new ArrayList<Uri>();
-		ArrayList<SelfieRecord> list = new ArrayList<SelfieRecord>();
-
-        try {
-        	FileInputStream fis = openFileInput(FILENAME);
-        	//BufferedReader br = new BufferedReader(new InputStreamReader(fis));
-        	ObjectInputStream is = new ObjectInputStream(fis);
-
-        	//String line = "";
-			//while (null != (line = br.readLine())) {
-        	SelfieRecord selfieRecord;
-        	while (null != (selfieRecord = (SelfieRecord) is.readObject())) {
-				//uriList.add(Uri.parse(line));
-        		list.add(selfieRecord);
-			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			Log.i(TAG,"readListFromFile: Couldn't retrieve list from file: " + e.toString());
-			list = generateSelfieFileList();
-			return list;
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			Log.i(TAG, "readListFromFile: Couldn't read object from file, class not found: " + e.toString());
-		}
-        
-        //return uriList;
-        return list;
-	}
-	
 	private ArrayList<SelfieRecord> generateSelfieFileList() {
-		File dir = new File("/sdcard/");
+		//File dir = mContext.getDir(DIRNAME, Context.MODE_PRIVATE);
+		File dir = mediaStorageDir;
 		if (! dir.isDirectory()) {
 			Log.i(TAG, "generateSelfieFileList: " + dir.toString() + " is not a valid directory");
 		}
@@ -381,8 +334,8 @@ public class MainActivity extends ListActivity {
 			
 		});
 		
+		ArrayList<SelfieRecord> selfieList = new ArrayList<SelfieRecord>();
 		if (fileList.length > 0) {
-			ArrayList<SelfieRecord> selfieList = new ArrayList<SelfieRecord>();
 			for(int i = 0; i < fileList.length; i++) {
 				//Uri fileUri = Uri.fromFile(new File(dir.getAbsolutePath() + fileList[i]));
 				Uri fileUri = Uri.fromFile(fileList[i]);
@@ -391,18 +344,9 @@ public class MainActivity extends ListActivity {
 				selfie.setDate(fileList[i].lastModified());
 				selfieList.add(selfie);
 			}
-			try {
-				writeListToFile(selfieList);
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				Log.i(TAG, "generateSelfieFileList: file not found. dir: " + dir.toString() + ". pattern: " + p.toString() + ". selfielist: " + selfieList.toString());
-				e.printStackTrace();
-			}
-			
-			return selfieList;
-		} else {
-			return null;
 		}
+		
+		return selfieList;
 	}
 	
 	public static long getLastPicTime() {
@@ -461,62 +405,4 @@ public class MainActivity extends ListActivity {
 	    selfieIntent.putExtra(EXTRA_BMP_FILEPATH, selfieRecord.getBmp().getPath());
 	    startActivity(selfieIntent);
 	}
-	/*
-	public void doBindService() {
-        // Establish a connection with our service
-        mContext.bindService(new Intent(mContext, ScheduleService.class), mConnection, Context.BIND_AUTO_CREATE);
-        mIsBound = true;
-    }
-     */
-    /**
-     * When you attempt to connect to the service, this connection will be called with the result.
-     * If we have successfully connected we instantiate our service object so that we can call methods on it.
-     */
-	/*
-    private ServiceConnection mConnection = new ServiceConnection() {
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            // This is called when the connection with our service has been established,
-            // giving us the service object we can use to interact with our service.
-        	ScheduleService.ServiceBinder binder = (ScheduleService.ServiceBinder) service;
-            mBoundService = binder.getService();
-            
-    		if (mIsBound) {
-    			setAlarmForNotification(5000);
-    		}
-
-    		Log.i(TAG, "Service mBoundService: " + mBoundService.toString() + ". mIsBound: " + mIsBound);
-        }
- 
-        public void onServiceDisconnected(ComponentName className) {
-            mBoundService = null;
-        }
-    };
-    */
-    /**
-     * Tell our service to set an alarm for the given date
-     * @param c a date to set the notification for
-     */
-    /*
-    public void setAlarmForNotification(Calendar c){
-        mBoundService.setAlarm(c);
-    }
-    */
-    /*
-    public void setAlarmForNotification(int millisecs){
-        mBoundService.setAlarm(millisecs);
-    }
-     */
-    /**
-     * When you have finished with the service call this method to stop it
-     * releasing your connection and resources
-     */
-    /*
-    public void doUnbindService() {
-        if (mIsBound) {
-            // Detach our existing connection.
-            mContext.unbindService(mConnection);
-            mIsBound = false;
-        }
-    }
-    */
 }
